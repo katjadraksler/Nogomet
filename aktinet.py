@@ -38,7 +38,8 @@ def index():
     SELECT uporabnik.id AS id, ime,priimek,uporabnisko_ime,spol,datum_rojstva,ulica, hisna_stevilka, kraj
     FROM uporabnik JOIN lokacija ON id_lokacija = lokacija.id
     """)
-    return rtemplate('uporabniki.html', osebe=cur)
+    print(cur)
+    return rtemplate('uporabniki.html', uporabnik=cur)
 
 # @get('/transakcije/<x:int>/')
 # def transakcije(x):
@@ -75,4 +76,5 @@ conn = psycopg2.connect(database=auth.db, host=auth.host, user=auth.user, passwo
 cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
 
 # poženemo strežnik na podanih vratih, npr. http://localhost:8080/
-run(host='localhost', port=SERVER_PORT, reloader=RELOADER)
+# reloader=RELOADER
+run(host='localhost', port=SERVER_PORT)
