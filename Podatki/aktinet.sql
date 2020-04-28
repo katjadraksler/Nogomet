@@ -9,12 +9,14 @@ DROP TABLE IF EXISTS udelezba CASCADE;
 DROP TABLE IF EXISTS aktivnost CASCADE;
 DROP TABLE IF EXISTS dogodek CASCADE;
 DROP TABLE IF EXISTS lokacija CASCADE;
+DROP TABLE IF EXISTS se_ukvarja CASCADE;
 
 CREATE TABLE posta (
     id SERIAL PRIMARY KEY,
     postna_stevilka TEXT NOT NULL,
     kraj TEXT NOT NULL,
-    drzava TEXT NOT NULL
+    drzava TEXT NOT NULL,
+    UNIQUE (postna_stevilka, drzava)
 );
 
 CREATE TABLE lokacija (
@@ -23,7 +25,8 @@ CREATE TABLE lokacija (
     ulica TEXT NOT NULL,
     hisna_stevilka TEXT NOT NULL,
     kraj TEXT NOT NULL,
-    id_posta INTEGER REFERENCES posta(id)
+    id_posta INTEGER REFERENCES posta(id),
+    UNIQUE (drzava, ulica, hisna_stevilka, kraj, id_posta)
 );
 
 CREATE TABLE uporabnik (
@@ -46,6 +49,12 @@ CREATE TABLE aktivnost (
     id SERIAL PRIMARY KEY,
     ime TEXT NOT NULL,
     tip INTEGER REFERENCES tip_aktivnosti(id) NOT NULL
+);
+
+CREATE TABLE se_ukvarja (
+    id_uporabnik INTEGER REFERENCES uporabnik(id),
+    id_aktivnost INTEGER REFERENCES aktivnost(id),
+    PRIMARY KEY (id_uporabnik, id_aktivnost)
 );
 
 CREATE TABLE dogodek (

@@ -1,12 +1,89 @@
-<html>
-<head>
-  <title>{{naslov}}</title>
-  <link href="{{ROOT}}static/style.css" rel="stylesheet">
-</head>
-<body>
-  <h2>{{naslov}}</h2>
+<!doctype html>
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+    <link rel="icon" href="/static/favicon.ico">
+    
+    %if defined('title'):
+    <title>{{title}}</title>
+    %else:
+    <title>AktiNet</title>
+    %end
 
-{{!base}}
 
-</body>
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="/static/css/bootstrap.min.css">
+
+    <!-- Custom styles for this template -->
+    <link href="/static/aktinet.css" rel="stylesheet">
+
+  </head>
+  <body class="bg-light">
+
+    <nav class="navbar navbar-expand-md fixed-top navbar-dark bg-dark">
+      <a class="navbar-brand" href="/">
+        <img src="/static/favicon.ico" width="30" height="30" class="d-inline-block align-top" alt="">
+        AktiNet
+      </a>
+      <button class="navbar-toggler p-0 border-0" type="button" data-toggle="offcanvas">
+        <span class="navbar-toggler-icon"></span>
+      </button>
+
+      <div class="navbar-collapse offcanvas-collapse" id="navbarsExampleDefault">
+        <ul class="navbar-nav mr-auto">
+          <li class="nav-item">
+            <a class="nav-link" href="/">Glavna stran</a>
+          </li>
+          <li class="nav-item">
+            <a class="nav-link" href="/uporabnik/{{uporabnik}/obvestila/">Obvestila</a>
+          </li>
+          <li class="nav-item dropdown">
+            <a class="nav-link dropdown-toggle" id="dropdown01" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                <!-- <span class="navbar-toggler-icon"></span> -->
+                Ostalo
+            </a>
+            <div class="dropdown-menu" aria-labelledby="dropdown01">
+              %if defined('ime') and defined('priimek'):
+              %celo_ime = ime + ' ' + priimek
+              %else:
+              %celo_ime = 'Profil'
+              %end
+              <a class="dropdown-item" href="/uporabnik/{{uporabnik}/">{{celo_ime}}</a>
+              <a class="dropdown-item" href="/uporabnik/{{uporabnik}/nastavitve/">Nastavitve</a>
+              <a class="dropdown-item" href="/odjava/">Odjava</a>
+            </div>
+          </li>
+        </ul>
+        <form class="form-inline my-2 my-lg-0">
+          <input class="form-control mr-sm-2" type="text" placeholder="Iskanje v AktiNetu" aria-label="Search">
+          <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Išči</button>
+        </form>
+      </div>
+    </nav>
+
+    <main role="main" class="container">
+      <div class="d-flex align-items-center p-3 my-3 text-white-50 bg-green rounded box-shadow">
+        <img class="mr-3" src="/static/favicon.ico" alt="" width="55" height="55">
+        <div class="lh-100">
+          <h6 class="mb-0 text-white lh-100">AktiNet</h6>
+          <small>Since 2020</small>
+        </div>
+      </div>
+
+      {{!base}}
+
+    </main>
+
+    <!-- Bootstrap core JavaScript
+    ================================================== -->
+    <!-- Placed at the end of the document so the pages load faster -->
+    <script src="https://code.jquery.com/jquery-3.5.0.min.js"></script>
+    <script src="/static/js/bootstrap.min.js"></script>
+    <script src="/static/aktinet.js"></script>
+  </body>
 </html>

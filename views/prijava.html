@@ -1,0 +1,40 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <!-- Required meta tags -->
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <link rel="shortcut icon" href="/static/favicon.ico">
+
+    <!-- Bootstrap CSS -->
+    <link rel="stylesheet" href="/static/css/bootstrap.min.css">
+
+    <!-- Custom styles for this template -->
+    <link href="/static/prijava.css" rel="stylesheet">
+
+    <title>AktiNet prijava</title>
+  </head>
+  <body class="text-center">
+    <form class="form-signin" role="form" method="post">
+      <img class="mb-4" src="/static/favicon.png" alt="" width="100" height="100">
+      <h2 class="form-signin-heading">Aktinet</h2>
+      %if napaka:
+      <div class="alert alert-warning">{{napaka}}</div>
+      %end
+      <input type="username" class="form-control" placeholder="Uporabniško ime"
+      %if uporabnik:
+      value="{{uporabnik}}"
+      %end
+      name="uporabnik"
+      required autofocus>
+      <input type="password" class="form-control" placeholder="Geslo" name="geslo" required>
+      </div>
+      <button class="btn btn-lg btn-primary btn-block" type="submit">Prijava</button>
+      <div>
+        <a href="/registracija/">Registracija</a>
+      </div>
+      <p class="mt-5 mb-3 text-muted">&copy; 2020</p>
+    </form>
+  </body>
+</html>
