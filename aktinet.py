@@ -65,6 +65,49 @@ def pretty_date(time):
     Predelaj čas (v formatu Unix epoch) v opis časa, na primer
     'pred 4 minutami', 'včeraj', 'pred 3 tedni' ipd.
     """
+<<<<<<< HEAD
+=======
+    return template(ROOT=ROOT, *largs, **kwargs)
+
+# @get('/static/<filename:path>')
+# def static(filename):
+#     return static_file(filename, root='static')
+
+@get('/')
+def index():
+    cur.execute("""
+    SELECT uporabnik.id AS id, ime,priimek,uporabnisko_ime,spol,datum_rojstva,ulica, hisna_stevilka, kraj
+    FROM uporabnik JOIN lokacija ON id_lokacija = lokacija.id
+    """)
+    print(cur)
+    return rtemplate('uporabniki.html', uporabnik=cur)
+
+# @get('/transakcije/<x:int>/')
+# def transakcije(x):
+#     cur.execute("SELECT * FROM transakcija WHERE znesek > %s ORDER BY znesek, id", [x])
+#     return rtemplate('transakcije.html', x=x, transakcije=cur)
+
+# @get('/dodaj_transakcijo')
+# def dodaj_transakcijo():
+#     return rtemplate('dodaj_transakcijo.html', znesek='', racun='', opis='', napaka=None)
+
+# @post('/dodaj_transakcijo')
+# def dodaj_transakcijo_post():
+#     znesek = request.forms.znesek
+#     racun = request.forms.racun
+#     opis = request.forms.opis
+#     try:
+#         cur.execute("INSERT INTO transakcija (znesek, racun, opis) VALUES (%s, %s, %s)",
+#                     (znesek, racun, opis))
+#         cur.execute("INSERT INTO transakcija (znesek, racun, opis) VALUES (%s, 100027, %s)",
+#                     (int(znesek) * 0.1, "Provizija za " + opis))
+#         conn.commit()
+#     except Exception as ex:
+#         conn.rollback()
+#         return rtemplate('dodaj_transakcijo.html', znesek=znesek, racun=racun, opis=opis,
+#                         napaka='Zgodila se je napaka: %s' % ex)
+#     redirect(ROOT)
+>>>>>>> 5000b66b233d2683a33f4abbd1ef898cabfb1b17
 
     now = datetime.now()
     if type(time) is int:
@@ -234,4 +277,9 @@ conn = psycopg2.connect(database=auth.db, host=auth.host, user=auth.user, passwo
 cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor)
 
 # poženemo strežnik na podanih vratih, npr. http://localhost:8080/
+<<<<<<< HEAD
 bottle.run(host='localhost', port=SERVER_PORT, reloader=RELOADER)
+=======
+# reloader=RELOADER
+run(host='localhost', port=SERVER_PORT)
+>>>>>>> 5000b66b233d2683a33f4abbd1ef898cabfb1b17
