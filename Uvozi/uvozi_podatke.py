@@ -35,11 +35,7 @@ conn = psycopg2.connect(database=auth.db, host=auth.host, user=auth.user, passwo
 cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor) 
 
 # uvoziSQL('aktinet')
-<<<<<<< HEAD
 uvozi_podatke('posta')
-=======
-# uvozi_podatke('posta')
->>>>>>> 5000b66b233d2683a33f4abbd1ef898cabfb1b17
 # uvozi_podatke('lokacija', {0})
 # uvozi_podatke('uporabnik', {0})
 # uvozi_podatke('tip_aktivnosti', {0})
@@ -50,8 +46,4 @@ uvozi_podatke('posta')
 # uvozi_podatke('sporocila', {3,4})
 # uvozi_podatke('udelezba')
 # uvozi_podatke('komentar', {0,4,5})
-<<<<<<< HEAD
 # uvozi_podatke('se_ukvarja')
-=======
-uvozi_podatke('se_ukvarja')
->>>>>>> 5000b66b233d2683a33f4abbd1ef898cabfb1b17
