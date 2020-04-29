@@ -1,0 +1,36 @@
+<a name="trac-{{tid}}">
+    <div class="panel panel-primary">
+        <div class="panel-heading">
+            
+    <img src="/static/favicon.ico" alt="" width="35" height="35" class="mr-2 rounded">
+            <a class="trac-avtor" >{{avtor_ime}} {{avtor_priimek}}</a>
+            <a class="trac-uporabnik" href="/user/{{avtor}}/profil/">@{{avtor}}</a>
+            <span class="trac-cas mb-3">{{cas}}</span>
+          </div>
+          <div class="panel-body">
+            <div class="trac-vsebina">{{vsebina}}</div>
+            <div class="track-kontrole">
+            %if avtor == uporabnik_prijavljen:
+            <a href="/trac/{{tid}}/delete/" class="pb-3">zbriši</a>
+            %end
+            </div>
+            <div class="panel-footer">
+              <div class="panel-body">
+                  %for (username, ime, priimek, vsebina) in komentarji:
+                  <div class="card card-body">
+                    <a class="trac-avtor " >{{ime}} {{priimek}}</a>
+                    <a class="trac-uporabnik" href="/user/{{avtor}}/profil/">@{{username}}</a>
+                      <div class="pt-3">{{vsebina}}</div>
+                  </div>
+                  %end
+              </div>
+                <div class="panel-footer text-right" id=komentiraj>
+                 <form method="post" action="/komentar/{{tid}}/">
+                    <textarea class="form-control input-lg p-text-area" name="komentar" placeholder="Komentiraj objavo."></textarea>
+                    <input class="btn btn-primary" id="komentar-button" type="submit" value="Komentiraj"/>
+                  </form>
+                </div>
+            </div>
+          </div>
+  </div>
+</a>

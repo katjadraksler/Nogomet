@@ -1,5 +1,6 @@
 # uvozimo ustrezne podatke za povezavo
 import auth
+import time
 
 # uvozimo psycopg2
 import psycopg2, psycopg2.extensions, psycopg2.extras
@@ -34,16 +35,16 @@ def uvozi_podatke(tabela, izpusti=set()):
 conn = psycopg2.connect(database=auth.db, host=auth.host, user=auth.user, password=auth.password)
 cur = conn.cursor(cursor_factory=psycopg2.extras.DictCursor) 
 
-# uvoziSQL('aktinet')
+uvoziSQL('aktinet')
 uvozi_podatke('posta')
-# uvozi_podatke('lokacija', {0})
-# uvozi_podatke('uporabnik', {0})
-# uvozi_podatke('tip_aktivnosti', {0})
-# uvozi_podatke('aktivnost', {0})
-# uvozi_podatke('dogodek', {0})
-# uvozi_podatke('objava', {0,4,5})
-# uvozi_podatke('sledilec')
-# uvozi_podatke('sporocila', {3,4})
-# uvozi_podatke('udelezba')
-# uvozi_podatke('komentar', {0,4,5})
-# uvozi_podatke('se_ukvarja')
+uvozi_podatke('lokacija')
+uvozi_podatke('uporabnik')
+uvozi_podatke('tip_aktivnosti', {0})
+uvozi_podatke('aktivnost', {0})
+uvozi_podatke('dogodek')
+uvozi_podatke('objava')
+uvozi_podatke('sledilec')
+uvozi_podatke('sporocila')
+uvozi_podatke('udelezba')
+uvozi_podatke('komentar')
+uvozi_podatke('se_ukvarja')

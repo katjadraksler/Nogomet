@@ -37,10 +37,15 @@
       <div class="navbar-collapse offcanvas-collapse" id="navbarsExampleDefault">
         <ul class="navbar-nav mr-auto">
           <li class="nav-item">
-            <a class="nav-link" href="/">Glavna stran</a>
+            %if defined('ime') and defined('priimek'):
+            %celo_ime = ime + ' ' + priimek
+            %else:
+            %celo_ime = 'Profil'
+            %end
+            <a class="nav-link" href="/uporabnik/{{uporabnik}}/">{{celo_ime}}</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="/uporabnik/{{uporabnik}/obvestila/">Obvestila</a>
+            <a class="nav-link" href="/uporabnik/{{uporabnik}}/sporocila/">Sporočila</a>
           </li>
           <li class="nav-item dropdown">
             <a class="nav-link dropdown-toggle" id="dropdown01" data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
@@ -48,13 +53,7 @@
                 Ostalo
             </a>
             <div class="dropdown-menu" aria-labelledby="dropdown01">
-              %if defined('ime') and defined('priimek'):
-              %celo_ime = ime + ' ' + priimek
-              %else:
-              %celo_ime = 'Profil'
-              %end
-              <a class="dropdown-item" href="/uporabnik/{{uporabnik}/">{{celo_ime}}</a>
-              <a class="dropdown-item" href="/uporabnik/{{uporabnik}/nastavitve/">Nastavitve</a>
+              <a class="dropdown-item" href="/uporabnik/{{uporabnik}}/nastavitve/">Nastavitve</a>
               <a class="dropdown-item" href="/odjava/">Odjava</a>
             </div>
           </li>
@@ -67,18 +66,12 @@
     </nav>
 
     <main role="main" class="container">
-      <div class="d-flex align-items-center p-3 my-3 text-white-50 bg-green rounded box-shadow">
-        <img class="mr-3" src="/static/favicon.ico" alt="" width="55" height="55">
-        <div class="lh-100">
-          <h6 class="mb-0 text-white lh-100">AktiNet</h6>
-          <small>Since 2020</small>
-        </div>
-      </div>
-
       {{!base}}
 
     </main>
-
+    <footer class="my-5 pt-5 text-muted text-center text-small">
+      <p class="mb-1">&copy; 2020 AktiNet</p>
+    </footer>
     <!-- Bootstrap core JavaScript
     ================================================== -->
     <!-- Placed at the end of the document so the pages load faster -->

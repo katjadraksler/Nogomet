@@ -1,0 +1,128 @@
+%rebase ('uporabnik.html')
+
+<div class="my-3 p-3 bg-white rounded box-shadow">
+    <h4 class="mb-3">Uredi profil</h4>
+    <form class="form-group" method="post" action=".">
+      %for sporocilo in sporocila:
+          <div class="alert {{sporocilo[0]}}">{{sporocilo[1]}}</div>
+      %end
+      <div class="row">
+        <div class="controls col-md-6 mb-3">
+          <label for="ime">Ime</label>
+          <input type="text" class="form-control" name="ime" id="ime" placeholder="" value="{{profil_ime}}" required="">
+        </div>
+        <div class="controls col-md-6 mb-3">
+          <label for="priimek">Priimek</label>
+          <input type="text" class="form-control" name="priimek" id="priimek" placeholder="" value="{{profil_priimek}}" required="">
+        </div>
+      </div>
+      <div class="controls mb-3">
+        <label for="username">Uporabniško ime</label>
+        <div class="input-group">
+          <div class="input-group-prepend">
+            <span class="input-group-text">@</span>
+          </div>
+          <input type="text" class="form-control" name="uporabnisko_ime" id="uporabnisko_ime" placeholder="" value={{uporabnik}} readonly>
+        </div>
+      </div>
+      <div class="controls mb-3">
+        <label for="geslo1">Staro geslo</label>
+        <div class="input-group">
+          <input type="password" class="form-control" name="geslo1" id="geslo1" placeholder="" value="">
+        </div>
+      </div>
+      <div class="row">
+        <div class="controls col-md-6 mb-3">
+          <label for="geslo2">Novo geslo</label>
+          <input type="password" class="form-control" name="geslo2" id="geslo2" placeholder="" value="">
+        </div>
+        <div class="controls col-md-6 mb-3">
+          <label for="geslo3">Potrdi geslo</label>
+          <input type="password" class="form-control" name="geslo3" id="geslo3" placeholder="" value="">
+        </div>
+      </div>
+      <div class="row">
+        <div class="controls col-md-6 mb-3">
+          <label for="spol">Spol</label>
+          <select class="custom-select d-block w-100" name="spol" id="spol">
+            %if spol=='Moški':
+            <option value="Moški">Moški</option>
+            <option>Ženska</option>
+            %elif spol=='Ženska':
+            <option value="Ženska">Ženska</option>
+            <option>Moški</option>
+            %else:
+            <option value="">Izberi...</option>
+            <option>Ženska</option>
+            <option>Moški</option>
+            %end
+          </select>
+        </div>
+        <div class="controls col-md-6 mb-3">
+          <label for="date">Datum rojstva</label>
+          %if datum_rojstva is not None:
+          <input type="date" class="form-control" value={{datum_rojstva}} id="date" name="date">
+          %else:
+          <input type="date" class="form-control" id="date" name="date">
+          %end
+          
+        </div>
+      </div>
+      <div class="row">
+        <div class="controls col-md-10 mb-3">
+          <label for="ulica">Ulica</label>
+          %if ulica is not None:
+          <input type="text" class="form-control" name="ulica" id="ulica" value="{{ulica}}" placeholder="">
+          %else:
+          <input type="text" class="form-control" name="ulica" id="ulica" placeholder="Main St">
+          %end
+        </div>
+        <div class="controls col-md-2 mb-3">
+          <label for="hisna_stevilka">Hišna Številka</label>
+          %if ulica is not None:
+          <input type="text" class="form-control" name="hisna_stevilka" id="hisna_stevilka" value="{{hisna_stevilka}}" placeholder="1234">
+          %else:
+          <input type="text" class="form-control" name="hisna_stevilka" id="hisna_stevilka" placeholder="1234">
+          %end
+        </div>
+      </div>
+      <div class="row">
+        <div class="controls col-md-5 mb-3">
+          <label for="country">Država</label>
+          <select class="custom-select d-block w-100" name="drzava" id="drzava">
+            %if drzava is not None:
+            <option value="{{drzava}}">{{drzava}}</option>
+            %for dr in drzave:
+            %if dr != drzava:
+            <option>{{dr}}</option>
+            %end
+            %end
+            %else:
+            <option value="">Izberi...</option>
+            %for drzava in drzave:
+            <option>{{drzava}}</option>
+            %end
+            %end
+          </select>
+        </div>
+        <div class="controls col-md-4 mb-3">
+          <label for="kraj">Kraj</label>
+          %if kraj is not None:
+          <input type="text" class="form-control" name="kraj" id="kraj" value="{{kraj}}" placeholder="">
+          %else:
+          <input type="text" class="form-control" name="kraj" id="kraj" placeholder="Ljubljana">
+          %end
+        </div>
+        <div class="controls col-md-3 mb-3">
+          <label for="postna_stevilka">Poštna Številka</label>
+          %if postna_stevilka is not None:
+          <input type="text" class="form-control" id="postna_stevilka" name="postna_stevilka" value={{postna_stevilka}} placeholder="">
+          %else:
+          <input type="text" class="form-control" id="postna_stevilka" name="postna_stevilka" placeholder="1000">
+          %end
+        </div>
+      </div>
+      <hr class="mb-4">
+      <button class="btn btn-primary btn-lg btn-block" type="submit">Shrani spremembe</button>
+    </form>
+</div>

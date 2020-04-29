@@ -21,19 +21,16 @@ CREATE TABLE posta (
 
 CREATE TABLE lokacija (
     id SERIAL PRIMARY KEY,
-    drzava TEXT NOT NULL,
     ulica TEXT NOT NULL,
     hisna_stevilka TEXT NOT NULL,
-    kraj TEXT NOT NULL,
     id_posta INTEGER REFERENCES posta(id),
-    UNIQUE (drzava, ulica, hisna_stevilka, kraj, id_posta)
+    UNIQUE (ulica, hisna_stevilka,id_posta)
 );
 
 CREATE TABLE uporabnik (
-    id SERIAL PRIMARY KEY,
+    uporabnisko_ime TEXT PRIMARY KEY NOT NULL,
     ime TEXT NOT NULL,
     priimek TEXT NOT NULL,
-    uporabnisko_ime TEXT UNIQUE NOT NULL,
     geslo TEXT NOT NULL,
     spol TEXT,
     datum_rojstva DATE,
@@ -52,14 +49,14 @@ CREATE TABLE aktivnost (
 );
 
 CREATE TABLE se_ukvarja (
-    id_uporabnik INTEGER REFERENCES uporabnik(id),
+    uporabnisko_ime TEXT REFERENCES uporabnik(uporabnisko_ime),
     id_aktivnost INTEGER REFERENCES aktivnost(id),
-    PRIMARY KEY (id_uporabnik, id_aktivnost)
+    PRIMARY KEY (uporabnisko_ime, id_aktivnost)
 );
 
 CREATE TABLE dogodek (
     id SERIAL PRIMARY KEY,
-    id_uporabnik INTEGER REFERENCES uporabnik(id) NOT NULL,
+    organizator TEXT REFERENCES uporabnik(uporabnisko_ime) NOT NULL,
     id_aktivnost INTEGER REFERENCES aktivnost(id) NOT NULL,
     opis TEXT,
     datum DATE NOT NULL,
@@ -70,7 +67,7 @@ CREATE TABLE dogodek (
 
 CREATE TABLE objava (
     id SERIAL PRIMARY KEY,
-    id_uporabnik INTEGER REFERENCES uporabnik(id) NOT NULL,
+    avtor TEXT REFERENCES uporabnik(uporabnisko_ime) NOT NULL,
     zasebnost BOOLEAN NOT NULL,
     vsebina TEXT,
     cas TIMESTAMP DEFAULT now(),
@@ -79,28 +76,28 @@ CREATE TABLE objava (
 
 CREATE TABLE komentar (
     id SERIAL PRIMARY KEY,
-    id_uporabnik INTEGER REFERENCES uporabnik(id) NOT NULL,
-    id_objava INTEGER REFERENCES uporabnik(id) NOT NULL,
+    avtor TEXT REFERENCES uporabnik(uporabnisko_ime) NOT NULL,
+    id_objava INTEGER REFERENCES objava(id) NOT NULL,
     vsebina TEXT NOT NULL,
     cas TIMESTAMP DEFAULT now()
 );
 
 CREATE TABLE sledilec (
-    sledilec INTEGER REFERENCES uporabnik(id) NOT NULL,
-    zasledovani INTEGER REFERENCES uporabnik(id) NOT NULL,
+    sledilec TEXT REFERENCES uporabnik(uporabnisko_ime) NOT NULL,
+    zasledovani TEXT REFERENCES uporabnik(uporabnisko_ime) NOT NULL,
     PRIMARY KEY (sledilec,zasledovani),
     CHECK (sledilec <> zasledovani)
 );
 
 CREATE TABLE udelezba (
+    udelezenec TEXT REFERENCES uporabnik(uporabnisko_ime) NOT NULL,
     id_dogodek INTEGER REFERENCES dogodek(id) NOT NULL,
-    id_uporabnik INTEGER REFERENCES uporabnik(id) NOT NULL,
-    PRIMARY KEY (id_dogodek,id_uporabnik)
+    PRIMARY KEY (id_dogodek,udelezenec)
 );
 
 CREATE TABLE sporocila (
-    posiljatelj INTEGER REFERENCES uporabnik(id) NOT NULL,
-    prejemnik INTEGER REFERENCES uporabnik(id) NOT NULL,
+    posiljatelj TEXT REFERENCES uporabnik(uporabnisko_ime) NOT NULL,
+    prejemnik TEXT REFERENCES uporabnik(uporabnisko_ime) NOT NULL,
     vsebina TEXT NOT NULL,
     cas TIMESTAMP DEFAULT now(),
     CHECK (posiljatelj <> prejemnik)

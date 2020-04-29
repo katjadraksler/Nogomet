@@ -1,0 +1,41 @@
+%rebase ('uporabnik.html')
+
+<div class="d-flex align-items-center p-3 my-3 text-white-50 bg-purple rounded box-shadow">
+    <img class="mr-3" src="/static/favicon.ico" alt="" width="55" height="55">
+    <div class="lh-100">
+      <h2 class="mb-0 text-white lh-100">{{profil_ime}} {{profil_priimek}}</h2>
+    </div>
+</div>
+%if uporabnik == uporabnik_prijavljen:
+<div class="my-3 p-3  bg-transparent rounded box-shadow">
+  
+  <h4 class="pb-2 mb-0 ">Dodaj objavo</h4>
+<form id="trac-forma bg-white" class="form-horizontal" method="post" action="/objava/nova/">
+  <fieldset>
+  
+  <!-- Textarea -->
+  <div class="control-group">
+    <label class="control-label" for="trac"></label>
+    <div class="controls">                     
+      <textarea id=objava name="objava" class="form-control input-lg p-text-area" rows="2" placeholder="Kaj imaš v mislih?"></textarea>
+    </div>
+  </div>
+  
+  <!-- Button -->
+  <div class="control-group text-right">
+    <label class="control-label" for="singlebutton"></label>
+    <div class="controls">
+      <button id="singlebutton" name="singlebutton" class="btn btn-primary">Objavi</button>
+    </div>
+  </div>
+  
+  </fieldset>
+  </form>
+</div>
+%end
+
+%for (tid,avtor,avtor_ime, avtor_priimek,cas,vsebina,komentarji) in traci:
+<div class="my-3 p-3 bg-white rounded box-shadow">
+  %include ('trac.html', tid=tid, avtor=avtor, avtor_ime=avtor_ime, cas=cas, vsebina=vsebina, komentarji=komentarji)
+</div>
+%end
