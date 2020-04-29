@@ -45,6 +45,9 @@ secret = "to skrivnost je zelo tezko uganiti 1094107c907cw982982c42"
 def password_md5(s):
     """Vrni MD5 hash danega UTF-8 niza. Gesla vedno spravimo v bazo
        kodirana s to funkcijo."""
+    if not s:
+        # Nočemo imeti praznih nizov za gesla!
+        return
     h = hashlib.md5()
     h.update(s.encode('utf-8'))
     return h.hexdigest()
@@ -196,14 +199,14 @@ def main():
     """Glavna stran."""
     # Iz cookieja dobimo uporabnika (ali ga preusmerimo na login, če
     # nima cookija)
-    (uporabnik, ime, priimek) = get_user()
+    (uporabnik_prijavljen, ime, priimek) = get_user()
     # Morebitno sporočilo za uporabnika
     sporocilo = get_sporocilo()
     # Vrnemo predlogo za glavno stran
     return bottle.template("glavna.html",
                            ime=ime,
                            priimek=priimek,
-                           uporabnik=uporabnik,
+                           uporabnik_prijavljen=uporabnik_prijavljen,
                            sporocilo=sporocilo)
 
 
@@ -222,12 +225,12 @@ def login_post():
     # Izračunamo MD5 has gesla, ki ga bomo spravili
     geslo = password_md5(bottle.request.forms.geslo)
     # Preverimo, ali se je uporabnik pravilno prijavil
-    # cur.execute("SELECT 1 FROM uporabnik WHERE uporabnisko_ime=%s AND geslo=%s",
-    #           [uporabnik, geslo])
+    cur.execute("SELECT 1 FROM uporabnik WHERE uporabnisko_ime=%s AND geslo=%s",
+              [uporabnik, geslo])
 
     # Zaradi probavanja!!!
-    cur.execute("SELECT 1 FROM uporabnik WHERE uporabnisko_ime=%s",
-              [uporabnik])
+    cur.execute("SELECT 1 FROM uporabnik WHERE uporabnisko_ime=%s and geslo=%s",
+              [uporabnik, geslo])
 
     if cur.fetchone() is None:
         # Uporabnisko ime in geslo se ne ujemata
@@ -250,7 +253,7 @@ def logout():
 def login_get():
     """Prikaži formo za registracijo."""
     return bottle.template("registracija.html", 
-                           username=None,
+                           uporabnik=None,
                            ime=None,
                            priimek=None,
                            napaka=None)
@@ -293,7 +296,7 @@ def register_post():
 def user_wall(uporabnik):
     """Prikaži stran uporabnika"""
     # Kdo je prijavljeni uporabnik? (Ni nujno isti kot username.)
-    (uporabnisko_ime, ime_prijavljen, priimek_prijavljen) = get_user()
+    (uporabnik_prijavljen, ime_prijavljen, priimek_prijavljen) = get_user()
     # Ime uporabnika (hkrati preverimo, ali uporabnik sploh obstaja)
     cur.execute("SELECT ime, priimek FROM uporabnik WHERE uporabnisko_ime=%s", [uporabnik])
     (ime,priimek) = cur.fetchone()
@@ -312,7 +315,7 @@ def user_wall(uporabnik):
                            ime=ime_prijavljen,
                            priimek=priimek_prijavljen,
                            uporabnik=uporabnik,
-                           uporabnik_prijavljen=uporabnisko_ime,
+                           uporabnik_prijavljen=uporabnik_prijavljen,
                            traci=ts)
 
 @bottle.get("/uporabnik/<uporabnik>/uredi_profil/")
@@ -322,7 +325,7 @@ def profil(uporabnik, sporocila=[]):
     (uporabnisko_ime, ime_prijavljen, priimek_prijavljen) = get_user()
     if uporabnisko_ime != uporabnik:
         # Ne dovolimo dostopa urejanju podatkov drugim uporabnikom
-        set_sporocilo('invalid-access', "Nedovoljen dostop do urejanja drugih profilov!")
+        set_sporocilo("alert-danger", "Nedovoljen dostop do urejanja drugih profilov!")
         return bottle.redirect("/")
     # Ime uporabnika (hkrati preverimo, ali uporabnik sploh obstaja)
     cur.execute("""
@@ -337,9 +340,9 @@ def profil(uporabnik, sporocila=[]):
     return bottle.template("uredi-profil.html",
                            uporabnik=uporabnik,
                            ime=ime_prijavljen,
-                           priimek=priimek,
-                           profil_ime=priimek_prijavljen,
-                           profil_priimek=priimek,
+                           priimek=priimek_prijavljen,
+                           profil_ime=ime_prijavljen,
+                           profil_priimek=priimek_prijavljen,
                            uporabnik_prijavljen=uporabnisko_ime,
                            spol=spol,
                            datum_rojstva=datum_rojstva,
@@ -365,7 +368,6 @@ def sprememba(uporabnik):
     WHERE uporabnisko_ime=%s
     """, [uporabnik])
     (ime, priimek, spol, datum_rojstva, ulica, hisna_stevilka, kraj, drzava, postna_stevilka) = cur.fetchone()
-
     # Novo ime
     ime_novo = bottle.request.forms.ime
     # Nov priimek
@@ -397,26 +399,41 @@ def sprememba(uporabnik):
         cur.execute("UPDATE uporabnik SET ime=%s WHERE uporabnisko_ime=%s;", [ime_novo, uporabnik])
         sporocila.append(("alert-success", "Spreminili ste si ime."))
 
+    # SPREMEMBA PRIIMKA:
+    if priimek_novo and priimek_novo != priimek:
+        cur.execute("UPDATE uporabnik SET priimek=%s WHERE uporabnisko_ime=%s;", [priimek_novo, uporabnik])
+        sporocila.append(("alert-success", "Spreminili ste si priimek."))
+        
+    # SPREMEMBA DATUMA:
+    if datum_nov and not (str(datum_nov) == str(datum_rojstva)):
+        cur.execute("UPDATE uporabnik SET datum_rojstva=%s WHERE uporabnisko_ime=%s;", [datum_nov, uporabnik])
+        sporocila.append(("alert-success", "Spreminili ste si datum rojstva."))
+
     # SPREMEBA GESLA:
     # Preverimo staro geslo
-    cur.execute ("SELECT 1 FROM uporabnik WHERE uporabnisko_ime=%s AND geslo=%s;",
+    
+    if geslo1:
+        cur.execute ("SELECT 1 FROM uporabnik WHERE uporabnisko_ime=%s AND geslo=%s;",
                [uporabnik, geslo1])
-    if cur.fetchone():
-        # Geslo je ok
-        # Ali se ujemata novi gesli?
-        if (geslo2 or geslo3) and geslo2 == geslo3:
-            geslo2 = password_md5(geslo2)
-            cur.execute ("UPDATE uporabnik SET geslo=%s WHERE uporabnisko_ime = %s;", [geslo2, uporabnik])
-            sporocila.append(("alert-success", "Spremenili ste geslo."))
+        if cur.fetchone():
+            # Geslo je ok
+            # Ali se ujemata novi gesli?
+            if (geslo2 or geslo3) and geslo2 == geslo3:
+                cur.execute ("UPDATE uporabnik SET geslo=%s WHERE uporabnisko_ime = %s;", [geslo2, uporabnik])
+                sporocila.append(("alert-success", "Spremenili ste geslo."))
+            else:
+                sporocila.append(("alert-danger", "Gesli se ne ujemata"))
         else:
-            sporocila.append(("alert-danger", "Gesli se ne ujemata"))
+            sporocila.append(("alert-danger", "Nepravilen vnos starega gesla."))
 
     
     # NASTAVITEV SPOLA
     if spol_nov and spol_nov != spol:
         cur.execute("UPDATE uporabnik SET spol=%s WHERE uporabnisko_ime = %s", [spol_nov, uporabnik])
-
-    if (ulica_nova != ulica or hisna_st_nova != hisna_st_nova or drzava_nova != drzava or kraj_nov != kraj or postna_stevilka_nova != postna_stevilka):
+        sporocila.append(("alert-success", "Spreminili ste si spol."))
+    p1 = ulica_nova != ulica or hisna_st_nova != hisna_st_nova or drzava_nova != drzava or kraj_nov != kraj or postna_stevilka_nova != postna_stevilka
+    p2 = ulica_nova or hisna_st_nova or drzava_nova or kraj_nov or postna_stevilka_nova
+    if p1 and p2:
         if not(postna_stevilka_nova and kraj_nov and drzava_nova and ulica_nova):
             # Za naslov so potrebna polja postne_st, kraj in drzava
             sporocila.append(("alert-danger", "Za nastavitev naslova je potrebno vnesti Poštno številko, Državo, Kraj in ulico."))
@@ -426,22 +443,24 @@ def sprememba(uporabnik):
             (id_p) =  cur.fetchone()
 
             if id_p:
+                id_p = id_p[0]
                 # Ta pošta že obstaja 
                 # Ali obstaja lokacija?
-                cur.execute("""SELECT id FROM lokacija WHERE ulica=%s AND hisna_stevilka=%s AND id_posta=%s;""", [ulica_nova, hisna_st_nova,id_p])
-                (id_l,) = cur.fetchone()
+                cur.execute("""SELECT id FROM lokacija WHERE ulica=%s AND hisna_stevilka=%s AND id_posta=%s""", [ulica_nova, hisna_st_nova,id_p])
+                (id_l) = cur.fetchone()
                 if id_l:
+                    id_l = id_l[0]
                     # Ta lokacija že obstaja
                     cur.execute ("UPDATE uporabnik SET id_lokacija=%s WHERE uporabnisko_ime = %s;", [id_l, uporabnik])
                 else:
-                    cur.execute("""INSERT INTO lokacija(ulica,hisna_stevilka,id_posta) VALUES (%s, %s, %s) RETURNING id;""", [ulica_nova, hisna_st_nova, id_p])
+                    cur.execute("""INSERT INTO lokacija(ulica,hisna_stevilka,id_posta) VALUES (%s, %s, %s) RETURNING id""", [ulica_nova, hisna_st_nova, id_p])
                     (id_l,) = cur.fetchone()
                     cur.execute ("UPDATE uporabnik SET id_lokacija=%s WHERE uporabnisko_ime = %s;", [id_l, uporabnik])
             else:
                 # Najprej vnesemo pošto
-                cur.execute("""INSERT INTO posta(postna_stevilka,kraj,drzava) VALUES (%s, %s, %s) RETURNING id;""",[postna_stevilka_nova, kraj_nov, drzava_nova])
+                cur.execute("""INSERT INTO posta(postna_stevilka,kraj,drzava) VALUES (%s, %s, %s) RETURNING id""",[postna_stevilka_nova, kraj_nov, drzava_nova])
                 (id_p,) = cur.fetchone()
-                cur.execute("""INSERT INTO lokacija(ulica,hisna_stevilka,id_posta) VALUES (%s, %s, %s) RETURNING id;""", [ulica_nova, hisna_st_nova, id_p])
+                cur.execute("""INSERT INTO lokacija(ulica,hisna_stevilka,id_posta) VALUES (%s, %s, %s) RETURNING id""", [ulica_nova, hisna_st_nova, id_p])
                 (id_l,) = cur.fetchone()
                 cur.execute ("UPDATE uporabnik SET id_lokacija=%s WHERE uporabnisko_ime = %s;", [id_l, uporabnik])
             sporocila.append(("alert-success", "Spreminili ste naslov."))
@@ -455,8 +474,8 @@ def sprememba(uporabnik):
                            uporabnik=uporabnik,
                            ime=ime,
                            priimek=priimek,
-                           profil_ime=ime_novo,
-                           profil_priimek=priimek_novo,
+                           profil_ime=ime,
+                           profil_priimek=priimek,
                            uporabnik_prijavljen=uporabnik,
                            spol=spol_nov,
                            datum_rojstva=datum_nov,
