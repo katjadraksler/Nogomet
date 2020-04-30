@@ -601,6 +601,13 @@ def sporocila(uporabnik):
                            uporabnik=uporabnik,
                            uporabnik_prijavljen=uporabnik_prijavljen)
 
+@bottle.post("/uporabnik/<uporabnik>/")
+def upravljaj_profil(uporabnik):
+    gumb = bottle.request.forms.gumb_sledi
+    upravljaj_sledilca(uporabnik,gumb[0] == "S")
+    return uporabnik_profil(uporabnik)
+    
+
 @bottle.get("/<uporabnik_profil>/<uporabnisko_ime_zasledovani>/zasledovani/prenehaj")
 def sporocila(uporabnik_profil,uporabnisko_ime_zasledovani):
     uporabnik = upravljaj_sledilca(uporabnisko_ime_zasledovani,False)
