@@ -188,7 +188,7 @@ def objave(limit=10,uporabnik=None):
 ######################################################################
 # Funkcije, ki obdelajo zahteve odjemalcev.
 
-@bottle.route("/static/<filename:path>")
+@bottle.get("/static/<filename:path>")
 def static(filename):
     """Splošna funkcija, ki servira vse statične datoteke iz naslova
        /static/..."""
@@ -474,8 +474,8 @@ def sprememba(uporabnik):
                            uporabnik=uporabnik,
                            ime=ime,
                            priimek=priimek,
-                           profil_ime=ime,
-                           profil_priimek=priimek,
+                           profil_ime=ime_novo,
+                           profil_priimek=priimek_novo,
                            uporabnik_prijavljen=uporabnik,
                            spol=spol_nov,
                            datum_rojstva=datum_nov,
