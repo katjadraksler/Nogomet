@@ -1,5 +1,5 @@
 <!DOCTYPE html>
-<html lang="si">
+<html lang="en">
   <head>
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
@@ -28,19 +28,19 @@
         %end
 
         <input type="username" class="form-control" placeholder="Uporabniško ime"
-               %if defined( 'uporabnik' ) :
+               %if uporabnik:
                value="{{uporabnik}}"
                %end
                name="uporabnik"
                required autofocus>
         <input type="username" class="form-control" placeholder="Ime"
-               %if ( 'ime' ) :
+               %if ime:
                value="{{ime}}"
                %end
                name="ime"
                required>
         <input type="username" class="form-control" placeholder="Priimek"
-               %if ( 'priimek' ):
+               %if priimek:
                value="{{priimek}}"
                %end
                name="priimek"

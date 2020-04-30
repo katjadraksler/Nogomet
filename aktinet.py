@@ -155,7 +155,7 @@ def objave(limit=10,uporabnik=None):
     # SELECTOV, zato se raje potrudimo in napišemo en sam SELECT.
     if uporabnik:
         cur.execute(
-        """SELECT objava.id, uporabnisko_ime, ime, priimek, komentar.vsebina
+        """SELECT objava.id, uporabnisko_ime, ime, priimek, komentar.vsebina, extract(epoch from komentar.cas)
         FROM
         (komentar JOIN objava ON komentar.id_objava = objava.id)
         JOIN uporabnik ON uporabnik.uporabnisko_ime = komentar.avtor
@@ -166,7 +166,7 @@ def objave(limit=10,uporabnik=None):
         """, [uporabnik, limit])
     else:
         cur.execute(
-        """SELECT objava.id, uporabnisko_ime, ime, priimek, komentar.vsebina
+        """SELECT objava.id, uporabnisko_ime, ime, priimek, komentar.vsebina, extract(epoch from komentar.cas)
         FROM
         (komentar JOIN objava ON komentar.id_objava = objava.id)
          JOIN uporabnik ON uporabnik.uporabnisko_ime = komentar.avtor
@@ -179,8 +179,8 @@ def objave(limit=10,uporabnik=None):
     # Najprej pripravimo slovar, ki vse id-je tračev slika v prazne sezname.
     komentar = { oid : [] for oid in oids }
     # Sedaj prenesemo rezultate poizvedbe v slovar
-    for (oid, uporabnisko_ime, ime, priimek, vsebina) in cur:
-        komentar[oid].append((uporabnisko_ime, ime, priimek, vsebina))
+    for (oid, uporabnisko_ime, ime, priimek, vsebina, kc) in cur:
+        komentar[oid].append((uporabnisko_ime, ime, priimek, vsebina, pretty_date(int(kc))))
     # Vrnemo nabor, kot je opisano v dokumentaciji funkcije:
     return ((oid, u, i, p, pretty_date(int(c)), v, komentar[oid])
             for (oid, u, i, p, c, v) in objave)
@@ -246,7 +246,7 @@ def login_post():
 @bottle.get("/odjava/")
 def logout():
     """Pobriši cookie in preusmeri na login."""
-    bottle.response.delete_cookie('uporabnik')
+    bottle.response.delete_cookie('uporabnik', path='/')
     bottle.redirect('/prijava/')
 
 @bottle.get("/registracija/")
@@ -292,7 +292,7 @@ def register_post():
         bottle.response.set_cookie('uporabnik', uporabnik, path='/', secret=secret)
         bottle.redirect("/")
 
-@bottle.route("/uporabnik/<uporabnik>/")
+@bottle.get("/uporabnik/<uporabnik>/")
 def user_wall(uporabnik):
     """Prikaži stran uporabnika"""
     # Kdo je prijavljeni uporabnik? (Ni nujno isti kot username.)
@@ -549,6 +549,25 @@ def pokazi_zasledovane(uporabnik, limit):
                            profil_priimek=priimek,
                            zasledovani=zasledovani)
 
+
+
+@bottle.get("/uporabnik/<uporabnik>/sporocila/")
+def user_wall(uporabnik):
+    """Prikaži stran uporabnika"""
+    # Kdo je prijavljeni uporabnik? (Ni nujno isti kot username.)
+    (uporabnik_prijavljen, ime_prijavljen, priimek_prijavljen) = get_user()
+    if uporabnik_prijavljen != uporabnik:
+        # Ne dovolimo dostopa urejanju podatkov drugim uporabnikom
+        set_sporocilo("alert-danger", "Nedovoljen dostop do sporočil drugih profilov!")
+        return bottle.redirect("/")
+    # Prikažemo predlogo
+    return bottle.template("sporocila.html",
+                           profil_ime=ime_prijavljen,
+                           profil_priimek=priimek_prijavljen,
+                           ime=ime_prijavljen,
+                           priimek=priimek_prijavljen,
+                           uporabnik=uporabnik,
+                           uporabnik_prijavljen=uporabnik_prijavljen)
 
 ######################################################################
 # Glavni program
