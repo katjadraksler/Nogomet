@@ -59,7 +59,7 @@ def set_sporocilo(tip, vsebina):
 # Funkcija, ki iz cookija dobi sporočilo, če je
 def get_sporocilo():
     sporocilo = bottle.request.get_cookie('message', default=None, secret=secret)
-    bottle.response.delete_cookie('message')
+    bottle.response.delete_cookie('message', path="/")
     return sporocilo
 
 # To smo dobili na http://stackoverflow.com/questions/1551382/user-friendly-time-format-in-python
@@ -133,7 +133,7 @@ def objave(limit=10,uporabnik=None):
     """
     if uporabnik:
         cur.execute(
-        """SELECT id, uporabnisko_ime, ime, priimek, extract(epoch from cas), vsebina
+        """SELECT id, uporabnisko_ime, ime, priimek, cas, vsebina
             FROM objava JOIN uporabnik ON objava.avtor = uporabnik.uporabnisko_ime
             WHERE objava.avtor = %s
             ORDER BY cas DESC
@@ -141,7 +141,7 @@ def objave(limit=10,uporabnik=None):
         """, [uporabnik,limit])
     else:
         cur.execute(
-        """SELECT id, uporabnisko_ime, ime, priimek, extract(epoch from cas), vsebina
+        """SELECT id, uporabnisko_ime, ime, priimek, cas, vsebina
            FROM objava JOIN uporabnik ON objava.avtor = uporabnik.uporabnisko_ime
            ORDER BY cas DESC
            LIMIT %s
@@ -155,7 +155,7 @@ def objave(limit=10,uporabnik=None):
     # SELECTOV, zato se raje potrudimo in napišemo en sam SELECT.
     if uporabnik:
         cur.execute(
-        """SELECT objava.id, uporabnisko_ime, ime, priimek, komentar.vsebina, extract(epoch from komentar.cas)
+        """SELECT objava.id, uporabnisko_ime, ime, priimek, komentar.vsebina, komentar.cas
         FROM
         (komentar JOIN objava ON komentar.id_objava = objava.id)
         JOIN uporabnik ON uporabnik.uporabnisko_ime = komentar.avtor
@@ -166,7 +166,7 @@ def objave(limit=10,uporabnik=None):
         """, [uporabnik, limit])
     else:
         cur.execute(
-        """SELECT objava.id, uporabnisko_ime, ime, priimek, komentar.vsebina, extract(epoch from komentar.cas)
+        """SELECT objava.id, uporabnisko_ime, ime, priimek, komentar.vsebina, komentar.cas
         FROM
         (komentar JOIN objava ON komentar.id_objava = objava.id)
          JOIN uporabnik ON uporabnik.uporabnisko_ime = komentar.avtor
@@ -180,9 +180,9 @@ def objave(limit=10,uporabnik=None):
     komentar = { oid : [] for oid in oids }
     # Sedaj prenesemo rezultate poizvedbe v slovar
     for (oid, uporabnisko_ime, ime, priimek, vsebina, kc) in cur:
-        komentar[oid].append((uporabnisko_ime, ime, priimek, vsebina, pretty_date(int(kc))))
+        komentar[oid].append((uporabnisko_ime, ime, priimek, vsebina, pretty_date(kc)))
     # Vrnemo nabor, kot je opisano v dokumentaciji funkcije:
-    return ((oid, u, i, p, pretty_date(int(c)), v, komentar[oid])
+    return ((oid, u, i, p, pretty_date(c), v, komentar[oid])
             for (oid, u, i, p, c, v) in objave)
 
 def upravljaj_sledilca(uporabnik, hoce_slediti):
@@ -242,15 +242,15 @@ def login_post():
     """Obdelaj izpolnjeno formo za prijavo"""
     # Uporabniško ime, ki ga je uporabnik vpisal v formo
     uporabnik = bottle.request.forms.uporabnik
-    # Izračunamo MD5 has gesla, ki ga bomo spravili
-    geslo = password_md5(bottle.request.forms.geslo)
-    # Preverimo, ali se je uporabnik pravilno prijavil
-    cur.execute("SELECT 1 FROM uporabnik WHERE uporabnisko_ime=%s AND geslo=%s",
-              [uporabnik, geslo])
+    # # Izračunamo MD5 has gesla, ki ga bomo spravili
+    # geslo = password_md5(bottle.request.forms.geslo)
+    # # Preverimo, ali se je uporabnik pravilno prijavil
+    # cur.execute("SELECT 1 FROM uporabnik WHERE uporabnisko_ime=%s AND geslo=%s",
+    #           [uporabnik, geslo])
 
     # Zaradi probavanja!!!
-    cur.execute("SELECT 1 FROM uporabnik WHERE uporabnisko_ime=%s and geslo=%s",
-              [uporabnik, geslo])
+    cur.execute("SELECT 1 FROM uporabnik WHERE uporabnisko_ime=%s",
+              [uporabnik])
 
     if cur.fetchone() is None:
         # Uporabnisko ime in geslo se ne ujemata
@@ -516,8 +516,7 @@ def pokazi_sledilce(uporabnik):
     """Pokaži stran vseh sledilcev uporabnika"""
     # Kdo je prijavljen?
     (uporabnik_prijavljen, ime_prijavljen,priimek_prijavljen) = get_user()
-    zas = dobi_zasledovane(uporabnik=uporabnik_prijavljen)
-    zasledovani_prijavljenega = [z[0] for z in zas]
+    zasledovani_prijavljenega = [z[0] for z in dobi_zasledovane(uporabnik=uporabnik_prijavljen)]
     # Dobim vse sledilce iz baze
     cur.execute("""
     SELECT uporabnisko_ime, ime, priimek FROM uporabnik WHERE 
@@ -568,64 +567,133 @@ def pokazi_zasledovane(uporabnik):
                            profil_priimek=priimek,
                            zasledovani=zasledovani)
 
+@bottle.post("/uporabnik/<uporabnik>/")
+def upravljaj_profil(uporabnik):
+    gumb = bottle.request.forms.gumb_sledi
+    upravljaj_sledilca(uporabnik,gumb[0] == "S")
+    return uporabnik_profil(uporabnik)
 
+@bottle.get("/<uporabnik_profil>/<uporabnisko_ime_zasledovani>/<polozaj>/<sprememba>")
+def sporocila(uporabnik_profil, uporabnisko_ime_zasledovani, polozaj, sprememba):
+    upravljaj_sledilca(uporabnisko_ime_zasledovani,sprememba=="pricni")
+    return bottle.redirect("/uporabnik/{}/{}/".format(uporabnik_profil,polozaj))
+
+@bottle.get("/isci/")
+def isci_uporabnike():
+    iskanje = bottle.request.query.isci
+    (uporabnik_prijavljen, ime_prijavljen,priimek_prijavljen) = get_user()
+    zasledovani_prijavljenega = [z[0] for z in dobi_zasledovane(uporabnik=uporabnik_prijavljen)]
+    cur.execute("SELECT uporabnisko_ime, ime, priimek FROM uporabnik")
+    vsi_uporabniki = cur.fetchall()
+    zadetki = []
+    for (up, i, p) in vsi_uporabniki:
+        if iskanje.lower() in i.lower() + ' ' + p.lower() or iskanje.lower() in up.lower():
+            zadetki.append((up,i,p))
+    return bottle.template("isci.html",
+                           iskanje=iskanje,
+                           ime=ime_prijavljen,
+                           priimek=priimek_prijavljen,
+                           zadetki=zadetki,
+                           uporabnik_prijavljen=uporabnik_prijavljen,
+                           zasledovani_prijavljenega=zasledovani_prijavljenega)
+
+@bottle.get("/isci/<iskanje>/<uporabnik>/<sprememba>/")
+def dodaj_pri_iskanju(iskanje,uporabnik,sprememba):
+    upravljaj_sledilca(uporabnik,sprememba=="pricni")
+    return bottle.redirect("/isci/?isci={}".format(iskanje))
 
 @bottle.get("/uporabnik/<uporabnik>/sporocila/")
-def sporocila(uporabnik):
-    """Prikaži stran uporabnika"""
+def sporocila_uporabnik(uporabnik):
     # Kdo je prijavljeni uporabnik? (Ni nujno isti kot username.)
     (uporabnik_prijavljen, ime_prijavljen, priimek_prijavljen) = get_user()
     if uporabnik_prijavljen != uporabnik:
         # Ne dovolimo dostopa urejanju podatkov drugim uporabnikom
         set_sporocilo("alert-danger", "Nedovoljen dostop do sporočil drugih profilov!")
         return bottle.redirect("/")
-    # cur.execute("""
-    # SELECT posiljatelj, vsebina, cas FROM sporocila WHERE prejemnik=%s ORDER BY cas
-    # """,[uporabnik_prijavljen])
-    # (posiljatelj, vsebina, cas) = cur.fetchone()
-    # pogovor_z_uporabnikom = {}
-    # Prikažemo predlogo
+    cur.execute("""
+    SELECT prejemnik, posiljatelj, vsebina, cas
+    FROM sporocila WHERE posiljatelj=%s OR prejemnik=%s ORDER BY cas DESC""", [uporabnik_prijavljen,uporabnik_prijavljen])
+    (prejemnik, posiljatelj, vsebina, cas) = cur.fetchone()
+    return bottle.redirect("/uporabnik/{}/sporocila/{}/".format(uporabnik_prijavljen,(posiljatelj if prejemnik == uporabnik_prijavljen else prejemnik)))
+
+@bottle.get("/uporabnik/<uporabnik>/sporocila/<sogovornik>/")
+def sporocila_uporabnika(uporabnik, sogovornik):
+    """Prikaži stran uporabnika"""
+    # Morebitno sporočilo za uporabnika
+    sporocilo = get_sporocilo()
+    # Kdo je prijavljeni uporabnik? (Ni nujno isti kot username.)
+    (uporabnik_prijavljen, ime_prijavljen, priimek_prijavljen) = get_user()
+    if uporabnik_prijavljen != uporabnik:
+        # Ne dovolimo dostopa urejanju podatkov drugim uporabnikom
+        set_sporocilo("alert-danger", "Nedovoljen dostop do sporočil drugih profilov!")
+        return bottle.redirect("/")
+    # Dobim vsa sporocila
+    cur.execute("""
+    SELECT prejemnik, posiljatelj, vsebina, cas
+    FROM sporocila WHERE posiljatelj=%s OR prejemnik=%s ORDER BY cas DESC""", [uporabnik_prijavljen,uporabnik_prijavljen])
+    pogovori = {}
+    osebe = []
+    for (prejemnik, posiljatelj, vsebina, cas) in cur:
+        if prejemnik == uporabnik_prijavljen:
+            if posiljatelj not in osebe:
+                osebe.append(posiljatelj)
+            a = pogovori.get(posiljatelj, [])
+            a.append((1,vsebina,pretty_date(cas)))
+            pogovori[posiljatelj] = a
+        else:
+            if prejemnik not in osebe:
+                osebe.append(prejemnik)
+            b = pogovori.get(prejemnik, [])
+            b.append((0,vsebina,pretty_date(cas)))
+            pogovori[prejemnik] = b
     return bottle.template("sporocila.html",
                            profil_ime=ime_prijavljen,
                            profil_priimek=priimek_prijavljen,
                            ime=ime_prijavljen,
                            priimek=priimek_prijavljen,
                            uporabnik=uporabnik,
-                           uporabnik_prijavljen=uporabnik_prijavljen)
+                           uporabnik_prijavljen=uporabnik_prijavljen,
+                           pogovori=pogovori,
+                           osebe=osebe,
+                           odprt_pogovor=sogovornik,
+                           sporocilo=sporocilo)
 
-@bottle.post("/uporabnik/<uporabnik>/")
-def upravljaj_profil(uporabnik):
-    gumb = bottle.request.forms.gumb_sledi
-    upravljaj_sledilca(uporabnik,gumb[0] == "S")
-    return uporabnik_profil(uporabnik)
-    
+@bottle.post("/uporabnik/<uporabnik>/sporocila/<sogovornik>/")
+def poslji_sporocilo(uporabnik, sogovornik):
+    """Uporabnik posilja sporocilo sogovorniku"""
+    vsebina = bottle.request.forms.novo_sporocilo
+    if vsebina:
+        cur.execute("INSERT INTO sporocila(posiljatelj, prejemnik, vsebina) VALUES (%s,%s,%s)",[uporabnik, sogovornik, vsebina])
+        conn.commit()
+    return bottle.redirect("/uporabnik/{}/sporocila/{}/".format(uporabnik, sogovornik))
 
-@bottle.get("/<uporabnik_profil>/<uporabnisko_ime_zasledovani>/zasledovani/prenehaj")
-def sporocila(uporabnik_profil,uporabnisko_ime_zasledovani):
-    uporabnik = upravljaj_sledilca(uporabnisko_ime_zasledovani,False)
-    return bottle.redirect("/uporabnik/{}/zasledovani/".format(uporabnik_profil))
-
-@bottle.get("/<uporabnik_profil>/<uporabnisko_ime_zasledovani>/zasledovani/pricni")
-def sporocila(uporabnik_profil, uporabnisko_ime_zasledovani):
-    upravljaj_sledilca(uporabnisko_ime_zasledovani,True)
-    return bottle.redirect("/uporabnik/{}/zasledovani/".format(uporabnik_profil))
-
-@bottle.get("/<uporabnik_profil>/<uporabnisko_ime_zasledovani>/sledilci/prenehaj")
-def sporocila(uporabnik_profil,uporabnisko_ime_zasledovani):
-    uporabnik = upravljaj_sledilca(uporabnisko_ime_zasledovani,False)
-    return bottle.redirect("/uporabnik/{}/sledilci/".format(uporabnik_profil))
-
-@bottle.get("/<uporabnik_profil>/<uporabnisko_ime_zasledovani>/sledilci/pricni")
-def sporocila(uporabnik_profil, uporabnisko_ime_zasledovani):
-    upravljaj_sledilca(uporabnisko_ime_zasledovani,True)
-    return bottle.redirect("/uporabnik/{}/sledilci/".format(uporabnik_profil))
-
-
-@bottle.get("/isci/")
-def isci_uporabnike():
-    iskanje = bottle.request.params["isci"]
-    print(iskanje)
-    return bottle.redirect("/")
+@bottle.post("/uporabnik/<uporabnik>/sporocila/<uporabnik_aktiven>/isci/")
+def poslji_sporocilo(uporabnik,uporabnik_aktiven):
+    isci = bottle.request.forms.isci_uporabnika
+    if isci:
+        cur.execute("SELECT uporabnisko_ime, ime, priimek FROM uporabnik WHERE uporabnisko_ime <> %s",[uporabnik])
+        vsi = cur.fetchall()
+        zacasen = None
+        for (ui, i, p) in vsi:
+            print(isci.lower(),i.lower() + ' ' + p.lower())
+            print(isci.lower() == i.lower() + ' ' + p.lower())
+            if ui.lower() == isci.lower():
+                return bottle.redirect("/uporabnik/{}/sporocila/{}/".format(uporabnik,ui))
+            elif isci.lower() == i.lower() + ' ' + p.lower() and zacasen:
+                # uporabnikov s tem imenom in priimkom je več
+                set_sporocilo("alert-danger", "Zaznanih je bilo več uporabnikov s tem imenom in priimkom. Prosimo da vnesete uporabniško ime.")
+                return bottle.redirect("/uporabnik/{}/sporocila/{}/".format(uporabnik, uporabnik_aktiven))
+            elif isci.lower() == i.lower() + ' ' + p.lower():
+                zacasen = ui
+        if zacasen:
+            return bottle.redirect("/uporabnik/{}/sporocila/{}/".format(uporabnik, zacasen))
+        else:
+            set_sporocilo("alert-danger", """
+            V bazi ni nobenega uporabnika, katerega uporabniski ime oziroma polno ime in priimek bi se ujemalo z \"{}\".
+            """.format(isci))
+            return bottle.redirect("/uporabnik/{}/sporocila/{}/".format(uporabnik, uporabnik_aktiven))
+    set_sporocilo("alert-danger", "V iskalno polje vnesite uporabnisko ime ali poln ime in priimek")
+    return bottle.redirect("/uporabnik/{}/sporocila/{}/".format(uporabnik, uporabnik_aktiven))
 ######################################################################
 # Glavni program
 
