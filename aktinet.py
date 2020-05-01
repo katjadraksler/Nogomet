@@ -7,7 +7,7 @@ import hashlib # računanje MD5 kriptografski hash za gesla
 from datetime import datetime
 
 # uvozimo ustrezne podatke za povezavo
-import auth_public as auth
+import auth_katja as auth
 
 # uvozimo psycopg2
 import psycopg2, psycopg2.extensions, psycopg2.extras
@@ -133,7 +133,7 @@ def objave(limit=10,uporabnik=None):
     """
     if uporabnik:
         cur.execute(
-        """SELECT id, uporabnisko_ime, ime, priimek, extract(epoch from cas AT TIME ZONE 'UTC'), vsebina
+        """SELECT id, uporabnisko_ime, ime, priimek, extract(epoch from cas), vsebina
             FROM objava JOIN uporabnik ON objava.avtor = uporabnik.uporabnisko_ime
             WHERE objava.avtor = %s
             ORDER BY cas DESC
@@ -185,16 +185,79 @@ def objave(limit=10,uporabnik=None):
     return ((oid, u, i, p, pretty_date(int(c)), v, komentar[oid])
             for (oid, u, i, p, c, v) in objave)
 
+def objave_prijateljev(limit=3, uporabnik=None):
+    """Vrni dano število tračev (privzeto 10). Rezultat je seznam, katerega
+       elementi so oblike [trac_id, avtor, ime_avtorja, cas_objave, vsebina, komentarji],
+       pri čemer so komentarji seznam elementov oblike [avtor, ime_avtorja, vsebina],
+       urejeni po času objave.
+    """
+    if uporabnik:
+        cur.execute(
+        """SELECT id,uporabnisko_ime, ime, priimek, extract(epoch from objava.cas), vsebina 
+            FROM uporabnik JOIN (objava JOIN sledilec ON objava.avtor = sledilec.zasledovani) 
+            ON uporabnik.uporabnisko_ime = sledilec.zasledovani
+            WHERE sledilec = %s 
+            LIMIT %s
+        """, [uporabnik,limit])
+    else:
+        cur.execute(
+        """SELECT id, uporabnisko_ime, ime, priimek, extract(epoch from objava.cas), vsebina
+           FROM objava JOIN uporabnik ON objava.avtor = uporabnik.uporabnisko_ime
+           ORDER BY objava.cas DESC
+           LIMIT %s
+        """, [limit])
+
+    # Rezultat predelamo v nabor.
+    objave = tuple(cur)
+    # Nabor id-jev tračev, ki jih bomo vrnili
+    oids = (objava[0] for objava in objave)
+    # Logično bi bilo, da bi zdaj za vsak trač naredili en SELECT za
+    # komentarje tega trača. Vendar je drago delati veliko število
+    # SELECTOV, zato se raje potrudimo in napišemo en sam SELECT.
+    if uporabnik:
+        cur.execute(
+        """SELECT objava.id, uporabnisko_ime, ime, priimek, komentar.vsebina, extract(epoch from komentar.cas)
+        FROM
+        (komentar JOIN objava ON komentar.id_objava = objava.id)
+        JOIN uporabnik ON uporabnik.uporabnisko_ime = komentar.avtor
+        WHERE
+        objava.id IN
+        (SELECT objava.id FROM uporabnik JOIN (objava JOIN sledilec ON objava.avtor = sledilec.zasledovani) 
+        ON uporabnik.uporabnisko_ime = sledilec.zasledovani
+        WHERE sledilec = %s)
+        ORDER BY komentar.cas DESC
+        """, [uporabnik])
+
+    else:
+        cur.execute(
+        """SELECT objava.id, uporabnisko_ime, ime, priimek, komentar.vsebina, extract(epoch from komentar.cas)
+        FROM
+        (komentar JOIN objava ON komentar.id_objava = objava.id)
+         JOIN uporabnik ON uporabnik.uporabnisko_ime = komentar.avtor
+        WHERE 
+        objava.id IN (SELECT id FROM objava ORDER BY cas DESC LIMIT %s)
+        ORDER BY komentar.cas""", [limit])
+    # Rezultat poizvedbe ima nerodno obliko, pretvorimo ga v slovar,
+    # ki id trača preslika v seznam pripadajočih komentarjev.
+    # Najprej pripravimo slovar, ki vse id-je tračev slika v prazne sezname.
+    komentar = { oid : [] for oid in oids }
+    # Sedaj prenesemo rezultate poizvedbe v slovar
+    for (oid, uporabnisko_ime, ime, priimek, vsebina, kc) in cur:
+        komentar[oid].append((uporabnisko_ime, ime, priimek, vsebina, pretty_date(int(kc))))
+    # Vrnemo nabor, kot je opisano v dokumentaciji funkcije:
+    return ((oid, u, i, p, pretty_date(int(c)), v, komentar[oid])
+            for (oid, u, i, p, c, v) in objave)
+
 ######################################################################
 # Funkcije, ki obdelajo zahteve odjemalcev.
 
-@bottle.route("/static/<filename:path>")
+@bottle.get("/static/<filename:path>")
 def static(filename):
     """Splošna funkcija, ki servira vse statične datoteke iz naslova
        /static/..."""
     return bottle.static_file(filename, root=static_dir)
 
-@bottle.route("/")
+@bottle.get("/")
 def main():
     """Glavna stran."""
     # Iz cookieja dobimo uporabnika (ali ga preusmerimo na login, če
@@ -203,11 +266,35 @@ def main():
     # Morebitno sporočilo za uporabnika
     sporocilo = get_sporocilo()
     # Vrnemo predlogo za glavno stran
+
+    #Ta ukaz potem, ko izoblikuješ profil (dodaš sledilce)
+    #ts = objave_prijateljev(limit=None, uporabnik=uporabnik_prijavljen)
+
+    ts = objave_prijateljev(limit=None, uporabnik='btillingb')
+
+    cur.execute("""SELECT uporabnisko_ime AS avtor, ime, priimek, vsebina, cas FROM
+                    uporabnik JOIN (objava JOIN sledilec ON objava.avtor = sledilec.zasledovani) 
+                    ON uporabnik.uporabnisko_ime = sledilec.zasledovani
+                    WHERE sledilec = 'forknays' """)
+
     return bottle.template("glavna.html",
+                           traci=ts,
                            ime=ime,
                            priimek=priimek,
                            uporabnik_prijavljen=uporabnik_prijavljen,
                            sporocilo=sporocilo)
+
+@bottle.get("/dogodki")
+def main():
+    """Glavna stran."""
+    # Iz cookieja dobimo uporabnika (ali ga preusmerimo na login, če
+    # nima cookija)
+    (uporabnik_prijavljen, ime, priimek) = get_user()
+
+    return bottle.template("objave.html",
+                           ime=ime,
+                           priimek=priimek,
+                           uporabnik_prijavljen=uporabnik_prijavljen)
 
 
 @bottle.get("/prijava/")

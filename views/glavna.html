@@ -6,4 +6,49 @@
   </div>
 %end
 
-Hello
+<div class="my-3 p-3 bg-white rounded shadow-sm">
+  <h6 class="border-bottom border-gray pb-2 mb-0">Priporočeni dogodki</h6>
+  <div class="media text-muted pt-3">
+    <svg class="bd-placeholder-img mr-2 rounded" width="32" height="32" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice" focusable="false" role="img" aria-label="Placeholder: 32x32">
+  </div>
+
+
+<div class="card card-body">
+<div class="card-deck list row">
+  <div class="list-row col-12">
+    <div class="row">
+      <div class="col-md-1 list-day">
+        <img src="/static/favicon.ico" alt="" width="35" height="35" class="mr-2 rounded">
+      </div>
+      <div class="col-md-5 list-title">
+          <h6>ODBOJKA</a></h6>
+          <p>Katja Draksler</p>
+        </div>
+        <div class="col-md-2 list-hour">
+            <h6>22.5.2019</h6>
+            <p>KRANJ</p>
+          </div><div class="col-md-2 list-cta text-right"> 
+            <a class="trac-uporabnik" href="/">več</a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+
+<div class="my-3 p-3 bg-white rounded shadow-sm">
+  <h6 class="border-bottom border-gray pb-2 mb-0">Najnovejše objave</h6>
+  <div class="media text-muted pt-3">
+    <svg class="bd-placeholder-img mr-2 rounded" width="32" height="32" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice" focusable="false" role="img" aria-label="Placeholder: 32x32">
+  </div>
+
+%for (tid,avtor,avtor_ime, avtor_priimek,cas,vsebina,komentarji) in traci:
+<div class="my-3 p-3 bg-white rounded shadow">
+  %include('trac.html', tid=tid, avtor=avtor, avtor_ime=avtor_ime, cas=cas, vsebina=vsebina, komentarji=komentarji)
+</div>
+%end
+
+
+  

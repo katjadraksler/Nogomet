@@ -3,7 +3,7 @@
         <div class="panel-heading">
             <img src="/static/favicon.ico" alt="" width="35" height="35" class="mr-2 rounded">
             <a class="trac-avtor" >{{avtor_ime}} {{avtor_priimek}}</a>
-            <a class="trac-uporabnik" href="/user/{{avtor}}/profil/">@{{avtor}}</a>
+            <a class="trac-uporabnik" href="/uporabnik/{{avtor}}/">@{{avtor}}</a>
             <span class="trac-cas mb-3">{{cas}}</span>
           </div>
           <div class="panel-body">
@@ -18,7 +18,7 @@
                   %for (username, ime, priimek, vsebina, komentar_cas) in komentarji:
                   <div class="card card-body">
                     <a class="trac-avtor" >{{ime}} {{priimek}}</a>
-                    <a class="trac-uporabnik" href="/user/{{avtor}}/profil/">@{{username}}</a>
+                    <a class="trac-uporabnik" href="/uporabnik/{{avtor}}/">@{{username}}</a>
                     <span class="trac-cas mb-3 small font-italic">{{komentar_cas}}</span>
                       <div class="pt-3">{{vsebina}}</div>
                   </div>
