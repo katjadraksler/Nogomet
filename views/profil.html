@@ -1,10 +1,23 @@
-%rebase('uporabnik.html')
+%rebase('osnova.html', title=profil_ime + ' ' + profil_priimek)
+
+% include('orodna-vrstica.html')
 
 <div class="d-flex align-items-center p-3 my-3 text-white-50 bg-purple rounded box-shadow">
-    <img class="mr-3" src="/static/favicon.ico" alt="" width="55" height="55">
-    <div class="lh-100">
+    <img class="mr-3" src="/static/ikona.svg" alt="" width="55" height="55">
+    <div class="lh-100 p-2">
       <h2 class="mb-0 text-white lh-100">{{profil_ime}} {{profil_priimek}}</h2>
     </div>
+    %if uporabnik != uporabnik_prijavljen:
+    <form method="post" action="/uporabnik/{{uporabnik}}/" class="controls ml-auto p-2">
+      <input type="submit" id="gumb_sledi" name="gumb_sledi"
+      %if ali_sledi: 
+      class="btn btn-outline-secondary" value="Prenehaj slediti"
+      %else:
+      class="btn btn-outline-primary" value="Sledi"
+      %end
+      ></input>
+    </form>
+    %end
 </div>
 %if uporabnik == uporabnik_prijavljen:
 <div class="my-3 p-3  bg-transparent rounded box-shadow">

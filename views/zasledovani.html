@@ -1,21 +1,26 @@
-%rebase('uporabnik.html')
+%rebase('osnova.html', title=profil_ime + ' ' + profil_priimek)
 
-<div class="my-3 p-3 bg-white rounded shadow">
-    <h6 class="border-bottom border-gray pb-2 mb-0">Zasledovani</h6>
-    %for (uporabnisko_ime_zasledovani, ime_zasledovani, priimek_zasledovani) in zasledovani:
-    <div class="media text-muted pt-3">
-      <img data-src="holder.js/32x32?theme=thumb&bg=007bff&fg=007bff&size=1" alt="" class="mr-2 rounded">
-      <p class="media-body pb-3 mb-0 small lh-125 border-bottom border-gray">
-        <a class="trac-avtor" >{{ime_zasledovani}} {{priimek_zasledovani}}</a>
-        <a class="trac-uporabnik" href="/uporabnik/{{uporabnisko_ime_zasledovani}}/">@{{uporabnisko_ime_zasledovani}}</a>
-      </p>
+% include('orodna-vrstica.html')
+
+<div class="d-flex justify-content-between align-items-center">
+  <h3 class="p-2 pt-4">Zasledovani</h3>
+  <div>
+    <input class="form-control mr-sm-2" id="isci" type="text" placeholder="Išči po zasledovanih" oninput="isci({{zasledovani}})" />
+  </div>
+</div>
+%for (uporabnisko_ime_zasledovani, ime_zasledovani, priimek_zasledovani) in zasledovani:
+<div id="{{uporabnisko_ime_zasledovani}}"> 
+  <div class="d-flex align-items-center p-3 my-3  rounded shadow">
+    <img class="mr-3" src="/static/ikona.svg" alt="" width="40" height="40">
+    <div class="pl-2 media-body">
+    <strong class="text-gray-dark">{{ime_zasledovani}} {{priimek_zasledovani}}</strong>
+    <div><a class="trac-uporabnik" href="/uporabnik/{{uporabnisko_ime_zasledovani}}/">@{{uporabnisko_ime_zasledovani}}</a></a></div>
     </div>
+    %if uporabnisko_ime_zasledovani in zasledovani_prijavljenega:
+    <a class="btn btn-outline-secondary" href="/{{uporabnik}}/{{uporabnisko_ime_zasledovani}}/zasledovani/prenehaj">Prenehaj slediti</a>
+    %else:
+    <a class="btn btn-outline-primary" href="/{{uporabnik}}/{{uporabnisko_ime_zasledovani}}/zasledovani/pricni">Sledi</a>
     %end
   </div>
-  %if st_p < st_z:
-  <small class="d-block text-right mt-3">
-    %st = st_p + 10
-    <a href="/uporabnik/{{uporabnik}}/zasledovani/{{st}}/">Prikaži več</a>
-  </small>
-  %end
 </div>
+%end
