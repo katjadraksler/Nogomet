@@ -1,54 +1,97 @@
 %rebase('osnova.html', title='AktiNet')
 
+<style>
+  div.a {text-transform: uppercase;}
+
+  .button1 {
+    background-color: #008CBA;
+    border: none;
+    border-radius: 4px;
+    color: white;
+    padding: 7px 15px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 4px 2px;
+    cursor: pointer;
+  }
+
+  .button2 {
+    background-color: #008CBA;
+    border: none;
+    border-radius: 4px;
+    color: white;
+    padding: 7px 15px;
+    text-align: center;
+    text-decoration: none;
+    display: inline-block;
+    font-size: 16px;
+    margin: 4px 2px;
+    cursor: pointer;
+  }
+  </style>
+
+
 %if sporocilo:
   <div class="alert {{sporocilo[0]}} alert-dismissable">{{sporocilo[1]}}
     <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
   </div>
 %end
 
-<div class="my-3 p-3 bg-white rounded shadow-sm">
-  <h6 class="border-bottom border-gray pb-2 mb-0">Priporočeni dogodki</h6>
-  <div class="media text-muted pt-3">
-    <svg class="bd-placeholder-img mr-2 rounded" width="32" height="32" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice" focusable="false" role="img" aria-label="Placeholder: 32x32">
-  </div>
+<h3 class="p-2 pt-4">PRIPOROČENI DOGODKI</h3>
 
-
+%for (organizator_ime,organizator_priimek,aktivnost,datum,kraj) in dogodki:
 <div class="card card-body">
-<div class="card-deck list row">
-  <div class="list-row col-12">
-    <div class="row">
-      <div class="col-md-1 list-day">
-        <img src="/static/favicon.ico" alt="" width="35" height="35" class="mr-2 rounded">
-      </div>
-      <div class="col-md-5 list-title">
-          <h6>ODBOJKA</a></h6>
-          <p>Katja Draksler</p>
+  <div class="card-deck list row">
+    <div class="list-row col-12">
+      <div class="row">
+        <div class="col-md-1 list-day">
+          <img src="/static/favicon.ico" alt="" width="35" height="35" class="mr-2 rounded">
+        </div>
+         <div class="col-md-5 list-title">
+        <div class="a"><b>{{aktivnost}}</b></div>
+          <p>{{organizator_ime}} {{organizator_priimek}}</p>
         </div>
         <div class="col-md-2 list-hour">
-            <h6>22.5.2019</h6>
-            <p>KRANJ</p>
-          </div><div class="col-md-2 list-cta text-right"> 
-            <a class="trac-uporabnik" href="/">več</a>
-          </div>
+            <h6>{{datum}}</h6>
+            <p>{{kraj}}</p>
         </div>
       </div>
     </div>
   </div>
 </div>
+<br>
+%end
+</div>
+
+
+<head>
+  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js">
+  </script>
+  <script>
+    $(document).ready(function(){
+      $(".button1").click(function(){
+        $("p").slideUp('slow');
+      });
+      $(".button2").click(function(){
+        $("p").slideDown('slow');
+      });
+    });
+  </script>
+</head>
+<body>
+  <button class="button1">Manj</button>
+  <button class="button2">Več</button> 
+</body>
 
 
 
-<div class="my-3 p-3 bg-white rounded shadow-sm">
-  <h6 class="border-bottom border-gray pb-2 mb-0">Najnovejše objave</h6>
-  <div class="media text-muted pt-3">
-    <svg class="bd-placeholder-img mr-2 rounded" width="32" height="32" xmlns="http://www.w3.org/2000/svg" preserveAspectRatio="xMidYMid slice" focusable="false" role="img" aria-label="Placeholder: 32x32">
-  </div>
+
+<h3 class="p-2 pt-4">NAJNOVEJŠE OBJAVE</h3>
 
 %for (tid,avtor,avtor_ime, avtor_priimek,cas,vsebina,komentarji) in traci:
 <div class="my-3 p-3 bg-white rounded shadow">
   %include('trac.html', tid=tid, avtor=avtor, avtor_ime=avtor_ime, cas=cas, vsebina=vsebina, komentarji=komentarji)
 </div>
 %end
-
-
-  
