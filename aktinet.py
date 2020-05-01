@@ -7,7 +7,7 @@ import hashlib # računanje MD5 kriptografski hash za gesla
 from datetime import datetime
 
 # uvozimo ustrezne podatke za povezavo
-import auth_katja as auth
+import auth_public as auth
 
 # uvozimo psycopg2
 import psycopg2, psycopg2.extensions, psycopg2.extras
@@ -328,15 +328,15 @@ def login_post():
     """Obdelaj izpolnjeno formo za prijavo"""
     # Uporabniško ime, ki ga je uporabnik vpisal v formo
     uporabnik = bottle.request.forms.uporabnik
-    # # Izračunamo MD5 has gesla, ki ga bomo spravili
-    # geslo = password_md5(bottle.request.forms.geslo)
-    # # Preverimo, ali se je uporabnik pravilno prijavil
-    # cur.execute("SELECT 1 FROM uporabnik WHERE uporabnisko_ime=%s AND geslo=%s",
-    #           [uporabnik, geslo])
+    # Izračunamo MD5 has gesla, ki ga bomo spravili
+    geslo = password_md5(bottle.request.forms.geslo)
+    # Preverimo, ali se je uporabnik pravilno prijavil
+    cur.execute("SELECT 1 FROM uporabnik WHERE uporabnisko_ime=%s AND geslo=%s",
+              [uporabnik, geslo])
 
-    # Zaradi probavanja!!!
-    cur.execute("SELECT 1 FROM uporabnik WHERE uporabnisko_ime=%s",
-              [uporabnik])
+    # # Zaradi probavanja!!!
+    # cur.execute("SELECT 1 FROM uporabnik WHERE uporabnisko_ime=%s",
+    #           [uporabnik])
 
     if cur.fetchone() is None:
         # Uporabnisko ime in geslo se ne ujemata
@@ -761,8 +761,6 @@ def poslji_sporocilo(uporabnik,uporabnik_aktiven):
         vsi = cur.fetchall()
         zacasen = None
         for (ui, i, p) in vsi:
-            print(isci.lower(),i.lower() + ' ' + p.lower())
-            print(isci.lower() == i.lower() + ' ' + p.lower())
             if ui.lower() == isci.lower():
                 return bottle.redirect("/uporabnik/{}/sporocila/{}/".format(uporabnik,ui))
             elif isci.lower() == i.lower() + ' ' + p.lower() and zacasen:
