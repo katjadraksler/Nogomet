@@ -2,6 +2,7 @@
 
 % include('orodna-vrstica.html')
 
+
 <div class="d-flex align-items-center p-3 my-3 text-white-50 bg-purple rounded box-shadow">
     <img class="mr-3" src="/static/ikona.svg" alt="" width="55" height="55">
     <div class="lh-100 p-2">
@@ -11,19 +12,20 @@
     <form method="post" action="/uporabnik/{{uporabnik}}/" class="controls ml-auto p-2">
       <input type="submit" id="gumb_sledi" name="gumb_sledi"
       %if ali_sledi: 
-      class="btn btn-outline-secondary" value="Prenehaj slediti"
+      class="btn btn-outline-secondary mr-3" value="Prenehaj slediti"
       %else:
-      class="btn btn-outline-primary" value="Sledi"
+      class="btn btn-outline-primary mr-3" value="Sledi"
       %end
       ></input>
     </form>
+    <a class="btn btn-outline-success" href="/uporabnik/{{uporabnik_prijavljen}}/sporocila/{{uporabnik}}/">Pošlji sporočilo</a>
     %end
 </div>
 %if uporabnik == uporabnik_prijavljen:
 <div class="my-3 p-3  bg-transparent rounded box-shadow">
   
   <h4 class="pb-2 mb-0 ">Dodaj objavo</h4>
-<form id="trac-forma bg-white" class="form-horizontal" method="post" action="/objava/nova/">
+<form id="trac-forma bg-white" class="form-horizontal" method="post" action="/uporabnik/{{uporabnik_prijavljen}}/objavi">
   <fieldset>
   
   <!-- Textarea -->

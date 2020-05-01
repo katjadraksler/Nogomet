@@ -68,7 +68,6 @@ CREATE TABLE dogodek (
 CREATE TABLE objava (
     id SERIAL PRIMARY KEY,
     avtor TEXT REFERENCES uporabnik(uporabnisko_ime) NOT NULL,
-    zasebnost BOOLEAN NOT NULL,
     vsebina TEXT,
     cas TIMESTAMP DEFAULT now(),
     id_dogodek INTEGER REFERENCES dogodek(id)

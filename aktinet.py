@@ -417,6 +417,8 @@ def uporabnik_profil(uporabnik):
     # Koliko sledovanih ima ta uporabnik?
     cur.execute("SELECT COUNT(*) FROM sledilec WHERE sledilec=%s", [uporabnik])
     st_s = cur.fetchone()
+    # Pogledamo, če imamo kakšna sporočila za uporabnika
+    sporocilo = get_sporocilo()
     # Prikažemo predlog
     return bottle.template("profil.html",
                            profil_ime=ime,
@@ -426,7 +428,8 @@ def uporabnik_profil(uporabnik):
                            uporabnik=uporabnik,
                            uporabnik_prijavljen=uporabnik_prijavljen,
                            traci=ts,
-                           ali_sledi=ali_sledi)
+                           ali_sledi=ali_sledi,
+                           sporocilo=sporocilo)
 
 @bottle.get("/uporabnik/<uporabnik>/uredi_profil/")
 def uredi_profil(uporabnik, sporocila=[]):
@@ -778,6 +781,17 @@ def poslji_sporocilo(uporabnik,uporabnik_aktiven):
             return bottle.redirect("/uporabnik/{}/sporocila/{}/".format(uporabnik, uporabnik_aktiven))
     set_sporocilo("alert-danger", "V iskalno polje vnesite uporabnisko ime ali poln ime in priimek")
     return bottle.redirect("/uporabnik/{}/sporocila/{}/".format(uporabnik, uporabnik_aktiven))
+
+@bottle.post("/uporabnik/<uporabnik>/objavi")
+def nova_objava(uporabnik):
+    vsebina = bottle.request.forms.objava
+    if vsebina:
+        cur.execute("INSERT INTO objava(avtor,vsebina) VALUES (%s, %s)",[uporabnik, vsebina])
+        conn.commit()
+        set_sporocilo("alert-success", "Uspešno ste delili objavo!")
+    else:
+        set_sporocilo("alert-danger", "Hoteli ste objaviti prazno sporočilo. Zakaj?! ಠ_ಠ")
+    return bottle.redirect("/uporabnik/{}/".format(uporabnik))
 ######################################################################
 # Glavni program
 

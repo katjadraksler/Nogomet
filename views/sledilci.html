@@ -17,10 +17,11 @@
     <div><a class="trac-uporabnik" href="/uporabnik/{{uporabnisko_ime_sledilec}}/">@{{uporabnisko_ime_sledilec}}</a></a></div>
     </div>
     %if uporabnisko_ime_sledilec in zasledovani_prijavljenega:
-    <a class="btn btn-outline-secondary" href="/{{uporabnik}}/{{uporabnisko_ime_sledilec}}/sledilci/prenehaj">Prenehaj slediti</a>
+    <a class="btn btn-outline-secondary mr-3" href="/{{uporabnik}}/{{uporabnisko_ime_sledilec}}/sledilci/prenehaj">Prenehaj slediti</a>
     %elif uporabnisko_ime_sledilec != uporabnik_prijavljen:
-    <a class="btn btn-outline-primary" href="/{{uporabnik}}/{{uporabnisko_ime_sledilec}}/sledilci/pricni">Sledi</a>
+    <a class="btn btn-outline-primary mr-3" href="/{{uporabnik}}/{{uporabnisko_ime_sledilec}}/sledilci/pricni">Sledi</a>
     %end
+    <a class="btn btn-outline-success" href="/uporabnik/{{uporabnik}}/sporocila/{{uporabnisko_ime_sledilec}}/">Pošlji sporočilo</a>
   </div>
 </div>
 %end
