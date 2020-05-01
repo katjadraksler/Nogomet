@@ -1,17 +1,27 @@
-<div class="nav-scroller bg-white box-shadow mt-3">
-  <nav class="nav nav-underline">
-    <a class="nav-link active" href="/uporabnik/{{uporabnik}}/">Profil</a>
-    <a class="nav-link" href="/uporabnik/{{uporabnik}}/sledilci/10/">
-      Sledilci
-    </a>
-    <a class="nav-link" href="/uporabnik/{{uporabnik}}/zasledovani/10/">
-      Zasledovani
-    </a>
-    <a class="nav-link" href="#">Moje aktivnosti</a>
+<nav class="navbar mt-3 navbar-expand-md shadow bg-light navbar-light">
+  <ul class="navbar-nav">
+    <li class="nav-item">
+      <a class="nav-link" href="/uporabnik/{{uporabnik}}/">Profil</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="/uporabnik/{{uporabnik}}/sledilci/">Sledilci</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="/uporabnik/{{uporabnik}}/zasledovani/">Zasledovani</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="/uporabnik/{{uporabnik}}/">Moje aktivnosti</a>
+    </li>
     %if uporabnik_prijavljen==uporabnik:
-    <a class="nav-link" href="#">Sporočila</a>
-    <a class="nav-link" href="#">Predlogi</a>
-    <a class="nav-link" href="/uporabnik/{{uporabnik}}/uredi_profil/">Uredi profil</a>
+    <li class="nav-item">
+      <a class="nav-link" href="/uporabnik/{{uporabnik}}/sporocila/">Sporočila</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="#">Predlogi</a>
+    </li>
+    <li class="nav-item">
+      <a class="nav-link" href="/uporabnik/{{uporabnik}}/uredi_profil/">Uredi profil</a>
+    </li>
     %end
-  </nav>
-</div>
+  </ul>
+</nav>

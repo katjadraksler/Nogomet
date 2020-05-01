@@ -195,18 +195,15 @@ def upravljaj_sledilca(uporabnik, hoce_slediti):
     conn.commit()
     return uporabnik_prijavljen
 
-def dobi_zasledovane(uporabnik, limit=None):
+def dobi_zasledovane(uporabnik):
     # Dobim vse zasledovane iz baze
     cur.execute("""
     SELECT uporabnisko_ime, ime, priimek FROM uporabnik WHERE 
     uporabnisko_ime IN 
-    (SELECT zasledovani FROM sledilec WHERE sledilec=%s) 
-    ORDER BY uporabnisko_ime LIMIT %s
-    """, (uporabnik, limit))
-    zasledovani = []
-    for (uporabnik_sledilec, ime_sledilec, priimek_sledilec) in cur:
-        zasledovani.append((uporabnik_sledilec, ime_sledilec, priimek_sledilec))
-    return zasledovani
+    (SELECT zasledovani FROM sledilec WHERE sledilec=%s)
+    ORDER BY ime ASC, priimek ASC 
+    """, [uporabnik])
+    return cur.fetchall()
 
 ######################################################################
 # Funkcije, ki obdelajo zahteve odjemalcev.
@@ -514,8 +511,8 @@ def sprememba(uporabnik):
                            sporocila=sporocila,
                            drzave=drzave)
 
-@bottle.get('/uporabnik/<uporabnik>/sledilci/<limit:int>/')
-def pokazi_sledilce(uporabnik, limit):
+@bottle.get('/uporabnik/<uporabnik>/sledilci/')
+def pokazi_sledilce(uporabnik):
     """Pokaži stran vseh sledilcev uporabnika"""
     # Kdo je prijavljen?
     (uporabnik_prijavljen, ime_prijavljen,priimek_prijavljen) = get_user()
@@ -526,14 +523,11 @@ def pokazi_sledilce(uporabnik, limit):
     SELECT uporabnisko_ime, ime, priimek FROM uporabnik WHERE 
     uporabnisko_ime IN 
     (SELECT sledilec FROM sledilec WHERE zasledovani=%s) 
-    ORDER BY uporabnisko_ime LIMIT %s
-    """, (uporabnik, limit))
-    sledilci = []
-    for (uporabnik_sledilec, ime_sledilec, priimek_sledilec) in cur:
-        sledilci.append((uporabnik_sledilec, ime_sledilec, priimek_sledilec))
-    # Koliko sledovanih ima ta uporabnik?
-    cur.execute("SELECT COUNT(*) FROM sledilec WHERE zasledovani=%s", [uporabnik])
-    (st_s,) = cur.fetchone()
+    ORDER BY ime ASC, priimek ASC 
+    """, [uporabnik])
+    sledilci = cur.fetchall()
+    # Koliko sledilcev ima ta uporabnik?
+    st_s = len(sledilci)
     cur.execute("SELECT ime, priimek FROM uporabnik WHERE uporabnisko_ime=%s", [uporabnik])
     (ime,priimek) = cur.fetchone()
     return bottle.template("sledilci.html",
@@ -541,19 +535,18 @@ def pokazi_sledilce(uporabnik, limit):
                            ime=ime_prijavljen,
                            priimek=priimek_prijavljen,
                            zasledovani_prijavljenega=zasledovani_prijavljenega,
-                           st_p=limit,
                            st_s=st_s,
                            uporabnik_prijavljen=uporabnik_prijavljen,
                            profil_ime=ime,
                            profil_priimek=priimek,
                            sledilci=sledilci)
 
-@bottle.get('/uporabnik/<uporabnik>/zasledovani/<limit:int>/')
-def pokazi_zasledovane(uporabnik, limit=10):
+@bottle.get('/uporabnik/<uporabnik>/zasledovani/')
+def pokazi_zasledovane(uporabnik):
     """Pokaži stran vseh, katerim uporabnik sledi"""
     # Kdo je prijavljen?
     (uporabnik_prijavljen, ime_prijavljen,priimek_prijavljen) = get_user()
-    zasledovani = dobi_zasledovane(uporabnik=uporabnik, limit=limit)
+    zasledovani = dobi_zasledovane(uporabnik=uporabnik)
     if uporabnik_prijavljen == uporabnik:
         zasledovani_prijavljenega = [z[0] for z in zasledovani]
     else:
@@ -568,7 +561,6 @@ def pokazi_zasledovane(uporabnik, limit=10):
                            uporabnik=uporabnik,
                            ime=ime_prijavljen,
                            priimek=priimek_prijavljen,
-                           st_p=limit,
                            st_z=st_z,
                            profil_ime=ime,
                            uporabnik_prijavljen=uporabnik_prijavljen,
@@ -611,22 +603,29 @@ def upravljaj_profil(uporabnik):
 @bottle.get("/<uporabnik_profil>/<uporabnisko_ime_zasledovani>/zasledovani/prenehaj")
 def sporocila(uporabnik_profil,uporabnisko_ime_zasledovani):
     uporabnik = upravljaj_sledilca(uporabnisko_ime_zasledovani,False)
-    return bottle.redirect("/uporabnik/{}/zasledovani/10/".format(uporabnik_profil))
+    return bottle.redirect("/uporabnik/{}/zasledovani/".format(uporabnik_profil))
 
 @bottle.get("/<uporabnik_profil>/<uporabnisko_ime_zasledovani>/zasledovani/pricni")
 def sporocila(uporabnik_profil, uporabnisko_ime_zasledovani):
     upravljaj_sledilca(uporabnisko_ime_zasledovani,True)
-    return bottle.redirect("/uporabnik/{}/zasledovani/10/".format(uporabnik_profil))
+    return bottle.redirect("/uporabnik/{}/zasledovani/".format(uporabnik_profil))
 
 @bottle.get("/<uporabnik_profil>/<uporabnisko_ime_zasledovani>/sledilci/prenehaj")
 def sporocila(uporabnik_profil,uporabnisko_ime_zasledovani):
     uporabnik = upravljaj_sledilca(uporabnisko_ime_zasledovani,False)
-    return bottle.redirect("/uporabnik/{}/sledilci/10/".format(uporabnik_profil))
+    return bottle.redirect("/uporabnik/{}/sledilci/".format(uporabnik_profil))
 
 @bottle.get("/<uporabnik_profil>/<uporabnisko_ime_zasledovani>/sledilci/pricni")
 def sporocila(uporabnik_profil, uporabnisko_ime_zasledovani):
     upravljaj_sledilca(uporabnisko_ime_zasledovani,True)
-    return bottle.redirect("/uporabnik/{}/sledilci/10/".format(uporabnik_profil))
+    return bottle.redirect("/uporabnik/{}/sledilci/".format(uporabnik_profil))
+
+
+@bottle.get("/isci/")
+def isci_uporabnike():
+    iskanje = bottle.request.params["isci"]
+    print(iskanje)
+    return bottle.redirect("/")
 ######################################################################
 # Glavni program
 
