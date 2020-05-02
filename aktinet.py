@@ -754,7 +754,7 @@ def poslji_sporocilo(uporabnik, sogovornik):
     if vsebina:
         cur.execute("INSERT INTO sporocila(posiljatelj, prejemnik, vsebina) VALUES (%s,%s,%s)",[uporabnik, sogovornik, vsebina])
         conn.commit()
-    return bottle.redirect("/uporabnik/{}/sporocila/{}/".format(uporabnik, sogovornik))
+    return bottle.redirect("/uporabnik/{}/sporocila/{}/#text-polje".format(uporabnik, sogovornik))
 
 @bottle.post("/uporabnik/<uporabnik>/sporocila/<uporabnik_aktiven>/isci/")
 def poslji_sporocilo(uporabnik,uporabnik_aktiven):
@@ -765,7 +765,7 @@ def poslji_sporocilo(uporabnik,uporabnik_aktiven):
         zacasen = None
         for (ui, i, p) in vsi:
             if ui.lower() == isci.lower():
-                return bottle.redirect("/uporabnik/{}/sporocila/{}/".format(uporabnik,ui))
+                return bottle.redirect("/uporabnik/{}/sporocila/{}/#text-polje".format(uporabnik,ui))
             elif isci.lower() == i.lower() + ' ' + p.lower() and zacasen:
                 # uporabnikov s tem imenom in priimkom je več
                 set_sporocilo("alert-danger", "Zaznanih je bilo več uporabnikov s tem imenom in priimkom. Prosimo da vnesete uporabniško ime.")
@@ -773,7 +773,7 @@ def poslji_sporocilo(uporabnik,uporabnik_aktiven):
             elif isci.lower() == i.lower() + ' ' + p.lower():
                 zacasen = ui
         if zacasen:
-            return bottle.redirect("/uporabnik/{}/sporocila/{}/".format(uporabnik, zacasen))
+            return bottle.redirect("/uporabnik/{}/sporocila/{}/#text-polje".format(uporabnik, zacasen))
         else:
             set_sporocilo("alert-danger", """
             V bazi ni nobenega uporabnika, katerega uporabniski ime oziroma polno ime in priimek bi se ujemalo z \"{}\".
