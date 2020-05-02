@@ -155,7 +155,7 @@ def objave(limit=10,uporabnik=None):
     # SELECTOV, zato se raje potrudimo in napišemo en sam SELECT.
     if uporabnik:
         cur.execute(
-        """SELECT objava.id, uporabnisko_ime, ime, priimek, komentar.vsebina, komentar.cas
+        """SELECT objava.id, uporabnisko_ime, ime, priimek, komentar.vsebina, komentar.cas, komentar.id
         FROM
         (komentar JOIN objava ON komentar.id_objava = objava.id)
         JOIN uporabnik ON uporabnik.uporabnisko_ime = komentar.avtor
@@ -166,7 +166,7 @@ def objave(limit=10,uporabnik=None):
         """, [uporabnik, limit])
     else:
         cur.execute(
-        """SELECT objava.id, uporabnisko_ime, ime, priimek, komentar.vsebina, komentar.cas
+        """SELECT objava.id, uporabnisko_ime, ime, priimek, komentar.vsebina, komentar.cas, komentar.id
         FROM
         (komentar JOIN objava ON komentar.id_objava = objava.id)
          JOIN uporabnik ON uporabnik.uporabnisko_ime = komentar.avtor
@@ -179,8 +179,8 @@ def objave(limit=10,uporabnik=None):
     # Najprej pripravimo slovar, ki vse id-je tračev slika v prazne sezname.
     komentar = { oid : [] for oid in oids }
     # Sedaj prenesemo rezultate poizvedbe v slovar
-    for (oid, uporabnisko_ime, ime, priimek, vsebina, kc) in cur:
-        komentar[oid].append((uporabnisko_ime, ime, priimek, vsebina, pretty_date(kc)))
+    for (oid, uporabnisko_ime, ime, priimek, vsebina, kc, kid) in cur:
+        komentar[oid].append((uporabnisko_ime, ime, priimek, vsebina, pretty_date(kc), kid))
     # Vrnemo nabor, kot je opisano v dokumentaciji funkcije:
     return ((oid, u, i, p, pretty_date(c), v, komentar[oid])
             for (oid, u, i, p, c, v) in objave)
@@ -417,7 +417,7 @@ def uporabnik_profil(uporabnik):
     cur.execute("SELECT 1 FROM sledilec WHERE sledilec=%s AND zasledovani=%s",[uporabnik_prijavljen,uporabnik])
     ali_sledi = (True if cur.fetchone() else False)
     # Seznam zadnjih 10 tračev
-    ts = objave(limit=None, uporabnik=uporabnik)
+    os = objave(limit=None, uporabnik=uporabnik)
     # Koliko sledilcev ima ta uporabnik?
     cur.execute("SELECT COUNT(*) FROM sledilec WHERE zasledovani=%s", [uporabnik])
     st_z = cur.fetchone()
@@ -434,7 +434,7 @@ def uporabnik_profil(uporabnik):
                            priimek=priimek_prijavljen,
                            uporabnik=uporabnik,
                            uporabnik_prijavljen=uporabnik_prijavljen,
-                           traci=ts,
+                           objave=os,
                            ali_sledi=ali_sledi,
                            sporocilo=sporocilo)
 
@@ -800,6 +800,33 @@ def nova_objava(uporabnik):
         set_sporocilo("alert-danger", "Hoteli ste objaviti prazno sporočilo. Zakaj?! ಠ_ಠ")
     return bottle.redirect("/uporabnik/{}/".format(uporabnik))
 
+@bottle.post("/uporabnik/<uporabnik>/komentiraj/<oid>/")
+def komentiraj_na_zidu(uporabnik,oid):
+    """ Komentiraj objavo na zidu danega uporabnika """
+    (uporabnik_prijavljen, ime_prijavljen, priimek_prijavljen) = get_user()
+    komentar = bottle.request.forms.komentar
+    if komentar:
+        cur.execute("INSERT INTO komentar(avtor,id_objava,vsebina) VALUES (%s, %s, %s)", [uporabnik_prijavljen, oid, komentar])
+        conn.commit()
+    return bottle.redirect("/uporabnik/{}/#objava-{}".format(uporabnik, oid))
+    
+@bottle.get("/uporabnik/<uporabnik>/komentar/<oid>/<kid>/brisi/")
+def brisi_komentar_na_zidu(uporabnik, oid, kid):
+    """ Briši komentar na uporabnikovem zidu pri objavi """
+    cur.execute("DELETE FROM komentar WHERE id=%s",[kid])
+    set_sporocilo("alert-success", "Uspešno ste zbrisali komentar!")
+    conn.commit()
+    return bottle.redirect("/uporabnik/{}/#objava-{}".format(uporabnik, oid))
+
+@bottle.get("/uporabnik/<uporabnik>/objava/<oid>/brisi/")
+def brisi_komentar_na_zidu(uporabnik, oid):
+    """ Briši komentar na uporabnikovem zidu pri objavi """
+    cur.execute("""DELETE FROM komentar 
+    WHERE id_objava IN (SELECT id from objava WHERE id=%s)""",[oid])
+    cur.execute("DELETE FROM objava WHERE id=%s",[oid])
+    set_sporocilo("alert-success", "Uspešno ste zbrisali objavo!")
+    conn.commit()
+    return bottle.redirect("/uporabnik/{}/".format(uporabnik, oid))
 ######################################################################
 # Glavni program
 
