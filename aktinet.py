@@ -7,7 +7,7 @@ import hashlib # računanje MD5 kriptografski hash za gesla
 from datetime import datetime
 
 # uvozimo ustrezne podatke za povezavo
-import auth_public as auth
+import auth_katja as auth
 
 # uvozimo psycopg2
 import psycopg2, psycopg2.extensions, psycopg2.extras
@@ -185,28 +185,20 @@ def objave(limit=10,uporabnik=None):
     return ((oid, u, i, p, pretty_date(c), v, komentar[oid])
             for (oid, u, i, p, c, v) in objave)
 
-def objave_prijateljev(limit=3, uporabnik=None):
-    """Vrni dano število tračev (privzeto 10). Rezultat je seznam, katerega
+def objave_prijateljev( uporabnik=None):
+    """Vrni dano število tračev od oseb, ki jih slediš (privzeto 5). Rezultat je seznam, katerega
        elementi so oblike [trac_id, avtor, ime_avtorja, cas_objave, vsebina, komentarji],
        pri čemer so komentarji seznam elementov oblike [avtor, ime_avtorja, vsebina],
        urejeni po času objave.
     """
-    if uporabnik:
-        cur.execute(
-        """SELECT id,uporabnisko_ime, ime, priimek, extract(epoch from objava.cas), vsebina 
-            FROM uporabnik JOIN (objava JOIN sledilec ON objava.avtor = sledilec.zasledovani) 
-            ON uporabnik.uporabnisko_ime = sledilec.zasledovani
-            WHERE sledilec = %s 
-            LIMIT %s
-        """, [uporabnik,limit])
-    else:
-        cur.execute(
-        """SELECT id, uporabnisko_ime, ime, priimek, extract(epoch from objava.cas), vsebina
-           FROM objava JOIN uporabnik ON objava.avtor = uporabnik.uporabnisko_ime
-           ORDER BY objava.cas DESC
-           LIMIT %s
-        """, [limit])
-
+    cur.execute(
+    """SELECT id,uporabnisko_ime, ime, priimek, extract(epoch from objava.cas), vsebina 
+        FROM uporabnik JOIN (objava JOIN sledilec ON objava.avtor = sledilec.zasledovani) 
+        ON uporabnik.uporabnisko_ime = sledilec.zasledovani
+        WHERE sledilec = %s 
+        LIMIT 6
+    """, [uporabnik])
+    
     # Rezultat predelamo v nabor.
     objave = tuple(cur)
     # Nabor id-jev tračev, ki jih bomo vrnili
@@ -214,29 +206,22 @@ def objave_prijateljev(limit=3, uporabnik=None):
     # Logično bi bilo, da bi zdaj za vsak trač naredili en SELECT za
     # komentarje tega trača. Vendar je drago delati veliko število
     # SELECTOV, zato se raje potrudimo in napišemo en sam SELECT.
-    if uporabnik:
-        cur.execute(
-        """SELECT objava.id, uporabnisko_ime, ime, priimek, komentar.vsebina, extract(epoch from komentar.cas)
-        FROM
-        (komentar JOIN objava ON komentar.id_objava = objava.id)
-        JOIN uporabnik ON uporabnik.uporabnisko_ime = komentar.avtor
-        WHERE
-        objava.id IN
-        (SELECT objava.id FROM uporabnik JOIN (objava JOIN sledilec ON objava.avtor = sledilec.zasledovani) 
-        ON uporabnik.uporabnisko_ime = sledilec.zasledovani
-        WHERE sledilec = %s)
-        ORDER BY komentar.cas DESC
-        """, [uporabnik])
+    
+    cur.execute(
+    """SELECT objava.id, uporabnisko_ime, ime, priimek, komentar.vsebina, extract(epoch from komentar.cas)
+    FROM
+    (komentar JOIN objava ON komentar.id_objava = objava.id)
+    JOIN uporabnik ON uporabnik.uporabnisko_ime = komentar.avtor
+    WHERE
+    objava.id IN
+    (SELECT objava.id FROM uporabnik JOIN (objava JOIN sledilec ON objava.avtor = sledilec.zasledovani) 
+    ON uporabnik.uporabnisko_ime = sledilec.zasledovani
+    WHERE sledilec = %s
+    LIMIT 6)
+    ORDER BY komentar.cas DESC
+    LIMIT 3
+    """, [uporabnik])
 
-    else:
-        cur.execute(
-        """SELECT objava.id, uporabnisko_ime, ime, priimek, komentar.vsebina, extract(epoch from komentar.cas)
-        FROM
-        (komentar JOIN objava ON komentar.id_objava = objava.id)
-         JOIN uporabnik ON uporabnik.uporabnisko_ime = komentar.avtor
-        WHERE 
-        objava.id IN (SELECT id FROM objava ORDER BY cas DESC LIMIT %s)
-        ORDER BY komentar.cas""", [limit])
     # Rezultat poizvedbe ima nerodno obliko, pretvorimo ga v slovar,
     # ki id trača preslika v seznam pripadajočih komentarjev.
     # Najprej pripravimo slovar, ki vse id-je tračev slika v prazne sezname.
@@ -247,6 +232,7 @@ def objave_prijateljev(limit=3, uporabnik=None):
     # Vrnemo nabor, kot je opisano v dokumentaciji funkcije:
     return ((oid, u, i, p, pretty_date(int(c)), v, komentar[oid])
             for (oid, u, i, p, c, v) in objave)
+
 def upravljaj_sledilca(uporabnik, hoce_slediti):
     """Prijavljen uporabnik bo zacel oz. nehal slediti uporabniku."""
     (uporabnik_prijavljen,ime, priimek) = get_user()
@@ -286,31 +272,52 @@ def main():
     sporocilo = get_sporocilo()
     # Vrnemo predlogo za glavno stran
 
-    #Ta ukaz potem, ko izoblikuješ profil (dodaš sledilce)
-    #ts = objave_prijateljev(limit=None, uporabnik=uporabnik_prijavljen)
+    
+    #Najnovejše objave oseb, ki jih uporabnik sledi
+    ts = objave_prijateljev(uporabnik=str(uporabnik_prijavljen))
 
-    ts = objave_prijateljev(limit=None, uporabnik='btillingb')
-
-    cur.execute("""SELECT uporabnisko_ime AS avtor, ime, priimek, vsebina, cas FROM
-                    uporabnik JOIN (objava JOIN sledilec ON objava.avtor = sledilec.zasledovani) 
-                    ON uporabnik.uporabnisko_ime = sledilec.zasledovani
-                    WHERE sledilec = 'forknays' """)
+    #Dogodki, ki bi glede na zanimanje zanimali uporabnika
+    
+    cur.execute("""SELECT uporabnik.ime, uporabnik.priimek, 
+                    REPLACE(aktivnost.ime, '_', ' ') as aktivnost, dogodek.datum,posta.kraj
+                    FROM
+                    (((dogodek LEFT JOIN aktivnost ON dogodek.id_aktivnost = aktivnost.id)
+                    LEFT JOIN
+                    uporabnik ON dogodek.organizator = uporabnik.uporabnisko_ime)
+                    LEFT JOIN lokacija ON dogodek.id_lokacija = lokacija.id)
+                    LEFT JOIN posta ON lokacija.id_posta = posta.id
+                    WHERE aktivnost.id IN
+                    (SELECT aktivnost.id FROM
+                    tip_aktivnosti JOIN (aktivnost JOIN se_ukvarja ON aktivnost.id = se_ukvarja.id_aktivnost)
+                    ON tip_aktivnosti.id = aktivnost.tip
+                    WHERE se_ukvarja.uporabnisko_ime = %s)
+                    LIMIT 10
+                    """, [uporabnik_prijavljen])
 
     return bottle.template("glavna.html",
-                           traci=ts,
-                           ime=ime,
-                           priimek=priimek,
-                           uporabnik_prijavljen=uporabnik_prijavljen,
-                           sporocilo=sporocilo)
+                            dogodki = cur,
+                            traci=ts,
+                            ime=ime,
+                            priimek=priimek,
+                            uporabnik_prijavljen=uporabnik_prijavljen,
+                            sporocilo=sporocilo)
 
-@bottle.get("/dogodki")
-def main():
+@bottle.get("/uporabnik/<uporabnik>/dodaj_dogodek/")
+def nov_dogodek(uporabnik):
     """Glavna stran."""
     # Iz cookieja dobimo uporabnika (ali ga preusmerimo na login, če
     # nima cookija)
     (uporabnik_prijavljen, ime, priimek) = get_user()
 
-    return bottle.template("objave.html",
+    #Za bottle post
+    #aktivnost = bottle.request.forms.aktivnost
+    #opis = bottle.request.forms.opis
+    #datum = bottle.request.forms.datum
+    #cas = bottle.request.forms.cas
+    #lokacija = bottle.request.forms.lokacija
+    #st_udelezencev = bottle.request.forms.st_udelezencev
+
+    return bottle.template("dodaj_dogodek.html",
                            ime=ime,
                            priimek=priimek,
                            uporabnik_prijavljen=uporabnik_prijavljen)
