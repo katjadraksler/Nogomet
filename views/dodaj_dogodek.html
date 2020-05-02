@@ -5,104 +5,117 @@
 
     <form class="form-group" method="post" action=".">
 
-    <div class="form-group">
-        <label for="aktivnost">Aktivnost:</label>
-        <input type="text" class="form-control" id="aktivnost">
-    </div>
-
-
-    <div class="row">
-        <div class="controls col-md-3 mb-3">
+        <div class="form-group">
             <div class="form-group">
-                <label for="date">Datum:</label>
-                <input type="date" id="datum" name="datum">
-            </div>
-        </div>
-        <div class="controls col-md-2 mb-3">
-            <div class="form-group">
-                <label for="time">Čas:</label>
-                <input type="time" imed="cas" name="cas">
-            </div>
-        </div>
-        <div class="controls col-md-7 mb-3">
-            <div class="form-group">
-                <label for="time">Število udeležencev:</label>
-                <input type="text" imed="stevilo_udelezencev" name="stevilo_udelezencev">
-            </div>
-        </div>
-    </div>
-
-    <div class="form-group">
-        <label for="opis">Opis:</label>
-        <input type="text" class="form-control" id="opis">
-    </div>
-
-    <div class="row">
-        <div class="controls col-md-10 mb-3">
-            <div class="form-group">
-                <label for="ulica">Ulica</label>
-                <input type="text" class="form-control" id="ulica">
-            </div>
-        </div>
-        <div class="controls col-md-2 mb-3">
-            <div class="form-group">
-                <label for="hisna_stevilka">Hišna Številka</label>
-                <input type="text" class="form-control" id="hisna_stevilka">
-            </div>
-        </div>
-    </div>
-
-    <div class="row">
-        <div class="controls col-md-4 mb-3">
-            <div class="form-group">
-                <label for="postna_stevilka">Poštna številka:</label>
-                <input type="text" class="form-control" id="postna_stevilka">
-            </div>
-        </div>
-        <div class="controls col-md-8 mb-3">
-            <div class="form-group">
-                <div class="controls col-md-5 mb-3">
-                    <label for="country">Država</label>
-                    <select class="custom-select d-block w-100" name="drzava" id="drzava">
-                      <option value="">Izberi...</option>
-                      <option>Austria</option>
-                      <option>Belgium</option>
-                      <option>Bulgaria</option>
-                      <option>Croatia</option>
-                      <option>Cyprus</option>
-                      <option>Czech Republic</option>
-                      <option>Denmark</option>
-                      <option>Estonia</option>
-                      <option>Finland</option>
-                      <option>France</option>
-                      <option>Germany</option>
-                      <option>Greece</option>
-                      <option>Hungary</option>
-                      <option>Ireland</option>
-                      <option>Italy</option>
-                      <option>Latvia</option>
-                      <option>Lithuania</option>
-                      <option>Luxembourg</option>
-                      <option>Malta</option>
-                      <option>Netherlands</option>
-                      <option>Poland</option>
-                      <option>Portugal</option>
-                      <option>Romania</option>
-                      <option>SlovakRepublic</option>
-                      <option>Slovenia</option>
-                      <option>Spain</option>
-                      <option>Sweden</option>
-                      <option>United Kingdom</option>
+                <div class="controls col-md-5 mb-3"></div>
+                    <label for="aktivnost">Aktivnost</label>
+                    <select class="custom-select d-block w-100" name="aktivnost" id="aktivnost">
+                        <option value="">Izberi...</option>
+                        %for aktivnost in aktivnosti:
+                        <option>{{aktivnost[0]}}</option>
+                        %end
                     </select>
-                  </div>
+                </div>
+            </div>
+        
+
+        <div class="row">
+            <div class="controls col-md-3 mb-3">
+                <div class="form-group">
+                    <label for="datum">Datum:</label>
+                    <input type="date" id="datum" name="datum">
+                </div>
+            </div>
+            <div class="controls col-md-2 mb-3">
+                <div class="form-group">
+                    <label for="cas">Čas:</label>
+                    <input type="time" id="cas" name="cas">
+                </div>
+            </div>
+            <div class="controls col-md-7 mb-3">
+                <div class="form-group">
+                    <label for="stevilo_udelezencev">Število udeležencev:</label>
+                    <input type="text" id="stevilo_udelezencev" name="stevilo_udelezencev">
+                </div>
             </div>
         </div>
-    </div>
 
+        <div class="form-group">
+            <label for="opis">Opis:</label>
+            <input type="text" class="form-control" id="opis" name ="opis">
+        </div>
 
+        <div class="row">
+            <div class="controls col-md-10 mb-3">
+                <div class="form-group">
+                    <label for="ulica">Ulica</label>
+                    <input type="text" class="form-control" id="ulica" name="ulica">
+                </div>
+            </div>
+            <div class="controls col-md-2 mb-3">
+                <div class="form-group">
+                    <label for="hisna_stevilka">Hišna Številka</label>
+                    <input type="text" class="form-control" id="hisna_stevilka" name="hisna_stevilka">
+                </div>
+            </div>
+        </div>
 
-    <button class="btn btn-primary btn-lg btn-block" type="submit">Dodaj dogodek</button>
+        <div class="row">
+            <div class="controls col-md-2 mb-3">
+                <div class="form-group">
+                    <label for="postna_stevilka">Poštna številka:</label>
+                    <input type="text" class="form-control" id="postna_stevilka" name = "postna_stevilka">
+                </div>
+            </div>
+            <div class="controls col-md-3 mb-3">
+                <div class="form-group">
+                    <label for="kraj">Kraj:</label>
+                    <input type="text" class="form-control" id="kraj" name = "kraj">
+                </div>
+            </div>
+            <div class="controls col-md-7 mb-3">
+                <div class="form-group">
+                    <div class="controls col-md-5 mb-3">
+                        <label for="drzava">Država</label>
+                        <select class="custom-select d-block w-100" name="drzava" id="drzava">
+                            <option value="">Izberi...</option>
+                            <option>Austria</option>
+                            <option>Slovenia</option>
+                            <option>Belgium</option>
+                            <option>Bulgaria</option>
+                            <option>Croatia</option>
+                            <option>Cyprus</option>
+                            <option>Czech Republic</option>
+                            <option>Denmark</option>
+                            <option>Estonia</option>
+                            <option>Finland</option>
+                            <option>France</option>
+                            <option>Germany</option>
+                            <option>Greece</option>
+                            <option>Hungary</option>
+                            <option>Ireland</option>
+                            <option>Italy</option>
+                            <option>Latvia</option>
+                            <option>Lithuania</option>
+                            <option>Luxembourg</option>
+                            <option>Malta</option>
+                            <option>Netherlands</option>
+                            <option>Poland</option>
+                            <option>Portugal</option>
+                            <option>Romania</option>
+                            <option>SlovakRepublic</option>
+                            <option>Slovenia</option>
+                            <option>Spain</option>
+                            <option>Sweden</option>
+                            <option>United Kingdom</option>
+                        </select>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <button class="btn btn-primary btn-lg btn-block" type="submit">Dodaj dogodek</button>
 
+    </form>
 </div>
 
     

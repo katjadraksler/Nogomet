@@ -3,6 +3,7 @@
 
 # uvozimo bottle.py
 import bottle
+import datetime
 import hashlib # računanje MD5 kriptografski hash za gesla
 from datetime import datetime
 
@@ -196,6 +197,7 @@ def objave_prijateljev( uporabnik=None):
         FROM uporabnik JOIN (objava JOIN sledilec ON objava.avtor = sledilec.zasledovani) 
         ON uporabnik.uporabnisko_ime = sledilec.zasledovani
         WHERE sledilec = %s 
+        ORDER BY objava.cas DESC
         LIMIT 6
     """, [uporabnik])
     
@@ -217,6 +219,7 @@ def objave_prijateljev( uporabnik=None):
     (SELECT objava.id FROM uporabnik JOIN (objava JOIN sledilec ON objava.avtor = sledilec.zasledovani) 
     ON uporabnik.uporabnisko_ime = sledilec.zasledovani
     WHERE sledilec = %s
+    ORDER BY objava.cas DESC
     LIMIT 6)
     ORDER BY komentar.cas DESC
     LIMIT 3
@@ -290,9 +293,9 @@ def main():
                     (SELECT aktivnost.id FROM
                     tip_aktivnosti JOIN (aktivnost JOIN se_ukvarja ON aktivnost.id = se_ukvarja.id_aktivnost)
                     ON tip_aktivnosti.id = aktivnost.tip
-                    WHERE se_ukvarja.uporabnisko_ime = %s)
+                    WHERE se_ukvarja.uporabnisko_ime = %s) AND NOT dogodek.organizator = %s
                     LIMIT 10
-                    """, [uporabnik_prijavljen])
+                    """, [uporabnik_prijavljen, uporabnik_prijavljen])
 
     return bottle.template("glavna.html",
                             dogodki = cur,
@@ -307,20 +310,131 @@ def nov_dogodek(uporabnik):
     """Glavna stran."""
     # Iz cookieja dobimo uporabnika (ali ga preusmerimo na login, če
     # nima cookija)
+
     (uporabnik_prijavljen, ime, priimek) = get_user()
 
-    #Za bottle post
-    #aktivnost = bottle.request.forms.aktivnost
-    #opis = bottle.request.forms.opis
-    #datum = bottle.request.forms.datum
-    #cas = bottle.request.forms.cas
-    #lokacija = bottle.request.forms.lokacija
-    #st_udelezencev = bottle.request.forms.st_udelezencev
+    if uporabnik_prijavljen != uporabnik:
+    # Ne dovolimo dostopa urejanju podatkov drugim uporabnikom
+        set_sporocilo("alert-danger", "Nedovoljena objava dogodka z drugim uporabniskim imenom!")
+        return bottle.redirect("/")
+    
+    cur.execute("SELECT REPLACE(aktivnost.ime, '_', ' ') FROM aktivnost ORDER BY aktivnost.ime")
 
     return bottle.template("dodaj_dogodek.html",
                            ime=ime,
                            priimek=priimek,
+                           aktivnosti = cur,
                            uporabnik_prijavljen=uporabnik_prijavljen)
+
+@bottle.post("/uporabnik/<uporabnik>/dodaj_dogodek/")
+def dodaj_dogodek(uporabnik):
+
+    #Uporabnik, ki je prijavljen
+    (uporabnik_prijavljen, ime, priimek) = get_user()
+
+    aktivnost = bottle.request.forms.aktivnost
+    datum = bottle.request.forms.datum
+    cas = bottle.request.forms.cas
+    stevilo_udelezencev = bottle.request.forms.stevilo_udelezencev
+    opis = bottle.request.forms.opis
+    ulica = bottle.request.forms.ulica
+    hisna_stevilka = bottle.request.forms.hisna_stevilka
+    postna_stevilka = bottle.request.forms.postna_stevilka
+    kraj = bottle.request.forms.kraj
+    drzava = bottle.request.forms.drzava
+
+    #ČAS - preoblikujemo
+    if cas:
+        cas = cas + ':00'
+    else:
+        set_sporocilo("alert-danger", "Čas je obvezen argument")
+        return bottle.redirect("/")
+    
+    #DATUM
+    if not datum:
+        set_sporocilo("alert-danger", "Datum je obvezen argument")
+        return bottle.redirect("/")
+
+    #AKTIVNOST - Zamenjemo aktivnost_ime z aktivnost_id
+    if not aktivnost:
+        set_sporocilo("alert-danger", "Aktivnost je obvezen argument")
+        return bottle.redirect("/")
+    else:
+        cur.execute("SELECT aktivnost.id FROM aktivnost WHERE aktivnost.ime = REPLACE(%s, ' ', '_')",
+                            [aktivnost])          
+        (aktivnost,) = cur.fetchone()
+
+    #LOKACIJA
+    #Potrebni podatki, da sploh imamo lokacijo
+    if ulica and hisna_stevilka and postna_stevilka and  kraj and drzava:
+        # Najprej poiščemo pošto v bazi
+        cur.execute("SELECT posta.id FROM posta WHERE postna_stevilka = %s AND kraj = %s AND drzava = %s",
+                                [postna_stevilka, kraj, drzava])
+        #Pošta je v bazi
+        if cur.fetchone():
+            cur.execute("SELECT posta.id FROM posta WHERE postna_stevilka = %s AND kraj = %s AND drzava = %s",
+                                [postna_stevilka, kraj, drzava])
+            (id_posta,) = cur.fetchone()
+            print('POŠTA JE V BAZI. Id pošte', id_posta)
+
+            #Poiščemo lokacijo
+            cur.execute("SELECT lokacija.id FROM lokacija WHERE ulica = %s AND hisna_stevilka = %s AND id_posta = %s",
+                                [ulica, hisna_stevilka, id_posta])
+            
+            #Lokcaija je v bazi
+            if cur.fetchone():
+                cur.execute("SELECT lokacija.id FROM lokacija WHERE ulica = %s AND hisna_stevilka = %s AND id_posta = %s",
+                                [ulica, hisna_stevilka, id_posta])
+                (id_lokacija,) = cur.fetchone()
+                print('LOKACIJA JE V BAZI. Id lokacije', id_lokacija)
+
+            #Lokacije ni v bazi. Jo dodamo
+            else:
+                cur.execute("INSERT INTO lokacija (ulica,hisna_stevilka, id_posta) VALUES (%s, %s, %s) RETURNING id",
+                                [ulica, hisna_stevilka, id_posta])
+                (id_lokacija,) = cur.fetchone()
+                print('LOKACIJO SMO DODALI V BAZO. Id lokacije', id_lokacija)
+
+        #Pošte ni v bazi => Lokacije ni v bazi. Ju dodamo
+        else:
+            #Pogledamo ali pošto sploh lahko dodamo v bazo
+            cur.execute("SELECT 1 FROM posta WHERE postna_stevilka = %s AND drzava = %s",
+                      [postna_stevilka,drzava])
+
+            #Poste ne moremo dodati ((stevilka,drzava) je UNIQUE)
+            if cur.fetchone():
+                set_sporocilo("alert-danger", "Ta pošta ne obstaja")
+                return bottle.redirect("/")
+            #Posto lahko dodamo
+            else:
+                cur.execute("INSERT INTO posta (postna_stevilka, kraj, drzava) VALUES (%s, %s, %s) RETURNING id",
+                                [postna_stevilka, kraj, drzava])
+                (id_posta,) = cur.fetchone()
+                print('POSTO SMO DODALI V BAZO. Id poste', id_posta)
+                
+                #Dodamo lokacijo
+                cur.execute("INSERT INTO lokacija (ulica,hisna_stevilka, id_posta) VALUES (%s, %s, %s) RETURNING id",
+                                [ulica, hisna_stevilka, id_posta])
+                (id_lokacija,) = cur.fetchone()
+                print('LOKACIJO SMO DODALI V BAZO. Id lokacije', id_lokacija)
+
+    #Ni dovolj podatkov, da bi dodali lokacijo
+    else:
+        id_lokacija = None
+    
+    #Vstavimo podatke v dogodek
+    print('STEVILO UDELEZENCEV', stevilo_udelezencev)
+    cur.execute("""INSERT INTO dogodek (organizator,id_aktivnost,opis,datum, cas, id_lokacija, stevilo_udelezencev) 
+                VALUES (%s, %s, %s, %s, %s, %s, %s)""",
+                [uporabnik_prijavljen,aktivnost,opis, datum, cas, id_lokacija, stevilo_udelezencev])
+    print(uporabnik_prijavljen,aktivnost,opis,datum,cas,id_lokacija)
+
+    conn.commit()
+    
+
+    set_sporocilo("alert-success", "Uspešno si dodal dogodek")
+    return bottle.redirect("/")
+ 
 
 
 @bottle.get("/prijava/")
