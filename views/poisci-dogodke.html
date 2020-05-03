@@ -1,0 +1,53 @@
+%rebase('osnova.html')
+
+    <h5 class="mb-3">Določi parametre</h5>
+
+    <form class="form-group" method="post" action=".">
+
+        <div class="row">
+        <div class="my-2 p-3 bg-white rounded box-shadow">
+            <div class="controls col-md-12 mb-3">
+                <div class="form-group">
+                    <label for="aktivnost">Aktivnost</label>
+                    <select class="custom-select d-block w-100" name="aktivnost" id="aktivnost">
+                        <option value="">Izberi...</option>
+                        %for aktivnost in aktivnosti:
+                        <option>{{aktivnost[0]}}</option>
+                        %end
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="aktivnost">Vrsta aktivnosti</label>
+                    <select class="custom-select d-block w-100" name="aktivnost" id="tip">
+                        <option value="">Izberi...</option>
+                        %for tip in tipi:
+                        <option>{{tip[0]}}</option>
+                        %end
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="datum">Od:</label>
+                    <input type="date" class="form-control" id="datum" name="datum_od">
+                </div>
+                <div class="form-group">
+                    <label for="datum">Do:</label>
+                    <input type="date" class="form-control" id="datum" name="datum_do">
+                </div>
+                <div class="form-group">
+                    <label for="kraj">Kraj:</label>
+                    <input type="text" class="form-control" id="kraj" name = "kraj">
+                </div>
+                <div class="form-group">
+                    <label for="kraj">Organizator:</label>
+                    <input type="text" class="form-control" id="organizator" name = "kraj" placeholder="@uporabniskoime">
+                </div>
+                <div class="form-group">
+                    <label for="kraj">Udelezenec:</label>
+                    <input type="text" class="form-control" id="udelezenec" name = "kraj">
+                </div>
+            <div class="controls col-md-8 mb-3">
+        </div>
+        <button class="btn btn-primary btn-lg btn-block" type="submit">Poišči</button>
+
+    </form>
+</div>

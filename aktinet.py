@@ -354,7 +354,7 @@ def dodaj_dogodek(uporabnik):
     today = today.strftime("%Y-%m-%d")
     time = datetime.now().time()
     time = time.strftime('%H:%M:%S')
-    if today < datum:
+    if today > datum:
         set_sporocilo("alert-danger", "Datum ne ustreza. Časovni stroj še ne obstaja")
         return bottle.redirect("/")
     elif today == datum and cas < time:
@@ -469,6 +469,31 @@ def login_post():
         # Vse je v redu, nastavimo cookie in preusmerimo na glavno stran
         bottle.response.set_cookie('uporabnik', uporabnik, path='/', secret=secret)
         bottle.redirect("/")
+
+@bottle.get("/uporabnik/<uporabnik>/poisci_dogodke/")
+def poisci_dogodek(uporabnik):
+    """Glavna stran."""
+    # Iz cookieja dobimo uporabnika (ali ga preusmerimo na login, če
+    # nima cookija)
+
+    (uporabnik_prijavljen, ime, priimek) = get_user()
+
+    if uporabnik_prijavljen != uporabnik:
+    # Ne dovolimo dostopa urejanju podatkov drugim uporabnikom
+        set_sporocilo("alert-danger", "Nedovoljena objava dogodka z drugim uporabniskim imenom!")
+        return bottle.redirect("/")
+    
+    cur.execute("SELECT REPLACE(aktivnost.ime, '_', ' ') FROM aktivnost ORDER BY aktivnost.ime")
+    aktivnosti = cur.fetchall()
+    cur.execute("SELECT REPLACE(tip_aktivnosti.tip, '_', ' ') FROM tip_aktivnosti ORDER BY tip_aktivnosti.tip")
+    tip = cur.fetchall()
+
+    return bottle.template("poisci-dogodke.html",
+                           ime=ime,
+                           priimek=priimek,
+                           aktivnosti = aktivnosti,
+                           tipi = tip,
+                           uporabnik_prijavljen=uporabnik_prijavljen)
 
 
 @bottle.get("/odjava/")
@@ -952,18 +977,10 @@ def moji_dogodki(uporabnik):
         set_sporocilo("alert-danger", "Ne moreš gledati profila drugega uporabnika!")
         return bottle.redirect("/")
 
-    cur.execute("""SELECT dogodek.id, REPLACE(aktivnost.ime, '_', ' '),tip_aktivnosti.tip,
-                    dogodek.organizator,uporabnik.ime, uporabnik.priimek, dogodek.datum, 
-                    dogodek.cas, lokacija.ulica, lokacija.hisna_stevilka, posta.kraj,
-                    posta.postna_stevilka, dogodek.opis, dogodek.stevilo_udelezencev
-                    FROM
-                    ((((dogodek LEFT JOIN aktivnost ON dogodek.id_aktivnost = aktivnost.id) 
-                    LEFT JOIN uporabnik ON uporabnik.uporabnisko_ime = dogodek.organizator)
-                    LEFT JOIN lokacija ON dogodek.id_lokacija = lokacija.id)
-                    LEFT JOIN posta ON lokacija.id_posta = posta.id)
-                    LEFT JOIN tip_aktivnosti ON aktivnost.tip = tip_aktivnosti.id
-                    WHERE organizator = %s AND dogodek.datum > NOW()  """, 
+    cur.execute("""SELECT * FROM pregledni_dogodki
+                    WHERE organizator = %s AND pregledni_dogodki.datum > NOW()  """, 
                     [uporabnik])
+    print(cur.fetchall())
     
     return bottle.template("moji_dogodki.html",
                             prihodnost = cur,
