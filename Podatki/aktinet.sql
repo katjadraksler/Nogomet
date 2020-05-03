@@ -101,3 +101,8 @@ CREATE TABLE sporocila (
     cas TIMESTAMP DEFAULT now(),
     CHECK (posiljatelj <> prejemnik)
 );
+
+GRANT ALL ON DATABASE sem2020_katjad TO katjad;
+GRANT ALL ON SCHEMA public TO katjad;
+GRANT ALL ON ALL TABLES IN SCHEMA public TO katjad;
+GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO katjad;

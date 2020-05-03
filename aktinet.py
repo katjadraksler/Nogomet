@@ -3,12 +3,11 @@
 
 # uvozimo bottle.py
 import bottle
-import datetime
 import hashlib # računanje MD5 kriptografski hash za gesla
 from datetime import datetime
 
 # uvozimo ustrezne podatke za povezavo
-import auth_katja as auth
+import auth_public as auth
 
 # uvozimo psycopg2
 import psycopg2, psycopg2.extensions, psycopg2.extras
@@ -823,7 +822,10 @@ def sporocila_uporabnik(uporabnik):
     cur.execute("""
     SELECT prejemnik, posiljatelj, vsebina, cas
     FROM sporocila WHERE posiljatelj=%s OR prejemnik=%s ORDER BY cas DESC""", [uporabnik_prijavljen,uporabnik_prijavljen])
-    (prejemnik, posiljatelj, vsebina, cas) = cur.fetchone()
+    try:
+        (prejemnik, posiljatelj, vsebina, cas) = cur.fetchone()
+    except:
+        (prejemnik, posiljatelj, vsebina, cas) = (None, None, None, None)
     return bottle.redirect("/uporabnik/{}/sporocila/{}/".format(uporabnik_prijavljen,(posiljatelj if prejemnik == uporabnik_prijavljen else prejemnik)))
 
 @bottle.get("/uporabnik/<uporabnik>/sporocila/<sogovornik>/")

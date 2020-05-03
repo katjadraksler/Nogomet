@@ -19,7 +19,6 @@ def uvozi_podatke(tabela, izpusti=set()):
         rd = csv.reader(f)
         gl = next(rd)
         glava = [x for i, x in enumerate(gl) if i not in izpusti]
-        n = len(gl)
         for r in rd:
             r = [None if x in ('', '-') else x for i, x in enumerate(r) if i not in izpusti]
             cur.execute("""
@@ -42,7 +41,7 @@ uvozi_podatke('uporabnik')
 uvozi_podatke('tip_aktivnosti', {0})
 uvozi_podatke('aktivnost', {0})
 uvozi_podatke('dogodek')
-uvozi_podatke('objava',{1})
+uvozi_podatke('objava',{1,3})
 uvozi_podatke('sledilec')
 uvozi_podatke('sporocila')
 uvozi_podatke('udelezba')

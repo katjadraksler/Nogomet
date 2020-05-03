@@ -7,7 +7,6 @@
     <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
   </div>
 %end
-
 <div class="d-flex align-items-center p-3 my-3 text-white-50 bg-purple rounded box-shadow">
     <img class="mr-3" src="/static/ikona.svg" alt="" width="55" height="55">
     <div class="lh-100 p-2">
@@ -73,7 +72,7 @@
             <div class="track-kontrole">
             %if avtor == uporabnik_prijavljen:
             <div class="text-right">
-            <a href="/uporabnik/{{uporabnik}}/objava/{{oid}}/brisi/" class="pb-3">zbriši</a></div>
+            <a href="/uporabnik/{{uporabnik}}/objava/{{oid}}/brisi/" class="pb-3 small">zbriši</a></div>
             %end
             </div>
         </div>
@@ -93,7 +92,7 @@
                 <div class="track-kontrole">
                 %if username == uporabnik_prijavljen:
                 <div class="text-right">
-                <a href="/uporabnik/{{uporabnik}}/komentar/{{oid}}/{{kid}}/brisi/" class="pb-3">zbriši</a></div>
+                <a href="/uporabnik/{{uporabnik}}/komentar/{{oid}}/{{kid}}/brisi/" class="pb-3 small">zbriši</a></div>
                 %end
                 </div>
               </div>
