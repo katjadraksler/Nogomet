@@ -254,6 +254,20 @@ def dobi_zasledovane(uporabnik):
     """, [uporabnik])
     return cur.fetchall()
 
+def dobi_aktivnosti(uporabnik):
+    """Iz baze dobim vse aktivnosti, ki zanimajo uporabnika, zapisane v slovar razporejen po tipu aktivnosti"""
+    cur.execute("""
+    SELECT aktivnost.ime, tip_aktivnosti.tip FROM se_ukvarja
+    LEFT JOIN aktivnost ON aktivnost.id = se_ukvarja.id_aktivnost
+    LEFT JOIN tip_aktivnosti ON aktivnost.tip = tip_aktivnosti.id
+    WHERE se_ukvarja.uporabnisko_ime=%s
+    """,[uporabnik])
+    k = {}
+    for akt, tip in cur.fetchall():
+        a = k.get(tip,[])
+        a.append()
+    return k
+
 ######################################################################
 # Funkcije, ki obdelajo zahteve odjemalcev.
 
@@ -974,6 +988,33 @@ def moji_dogodki(uporabnik):
                             priimek=priimek_prijavljen,
                             sporocilo=sporocilo,
                             uporabnik_prijavljen=uporabnik_prijavljen)
+
+@bottle.get('/uporabnik/<uporabnik>/moje-aktivnosti/')
+def pokazi_aktivnost(uporabnik):
+    """Pokaži stran vseh aktivnostmi, ki zanimajo uporabnika"""
+    # Kdo je prijavljen?
+    (uporabnik_prijavljen, ime_prijavljen,priimek_prijavljen) = get_user()
+    aktivnosti_uporabnika = dobi_aktivnosti(uporabnik)
+    if uporabnik_prijavljen == uporabnik:
+        zasledovani_prijavljenega = [z[0] for z in zasledovani]
+    else:
+        zas = dobi_zasledovane(uporabnik=uporabnik_prijavljen)
+        zasledovani_prijavljenega = [z[0] for z in zas]
+    # Koliko ljudi zasleduje ta uporabnik?
+    cur.execute("SELECT COUNT(*) FROM sledilec WHERE sledilec=%s", [uporabnik])
+    (st_z,) = cur.fetchone()
+    cur.execute("SELECT ime, priimek FROM uporabnik WHERE uporabnisko_ime=%s", [uporabnik])
+    (ime,priimek) = cur.fetchone()
+    return bottle.template("zasledovani.html",
+                           uporabnik=uporabnik,
+                           ime=ime_prijavljen,
+                           priimek=priimek_prijavljen,
+                           st_z=st_z,
+                           profil_ime=ime,
+                           uporabnik_prijavljen=uporabnik_prijavljen,
+                           zasledovani_prijavljenega=zasledovani_prijavljenega,
+                           profil_priimek=priimek,
+                           zasledovani=zasledovani)
 ######################################################################
 # Glavni program
 

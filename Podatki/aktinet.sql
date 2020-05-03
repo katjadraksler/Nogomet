@@ -22,9 +22,9 @@ CREATE TABLE posta (
 CREATE TABLE lokacija (
     id SERIAL PRIMARY KEY,
     ulica TEXT NOT NULL,
-    hisna_stevilka TEXT NOT NULL,
+    hisna_stevilka TEXT,
     id_posta INTEGER REFERENCES posta(id),
-    UNIQUE (ulica, hisna_stevilka,id_posta)
+    UNIQUE (ulica, hisna_stevilka, id_posta)
 );
 
 CREATE TABLE uporabnik (
