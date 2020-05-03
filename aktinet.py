@@ -264,9 +264,17 @@ def dobi_aktivnosti(uporabnik):
     """,[uporabnik])
     k = {}
     for akt, tip in cur.fetchall():
-        a = k.get(tip,[])
-        a.append()
+        a = k.get(tip,set())
+        a.add(akt)
+        k[tip] = a
     return k
+
+def dobi_ime(uporabnik):
+    cur.execute("SELECT ime, priimek FROM uporabnik WHERE uporabnisko_ime=%s", [uporabnik])
+    try:
+        return cur.fetchone()
+    except:
+        return
 
 ######################################################################
 # Funkcije, ki obdelajo zahteve odjemalcev.
@@ -540,8 +548,7 @@ def uporabnik_profil(uporabnik):
     # Kdo je prijavljeni uporabnik? (Ni nujno isti kot username.)
     (uporabnik_prijavljen, ime_prijavljen, priimek_prijavljen) = get_user()
     # Ime uporabnika (hkrati preverimo, ali uporabnik sploh obstaja)
-    cur.execute("SELECT ime, priimek FROM uporabnik WHERE uporabnisko_ime=%s", [uporabnik])
-    (ime,priimek) = cur.fetchone()
+    (ime,priimek) = dobi_ime(uporabnik)
     # Ali prijavljen uporabnik sledi uporabniku iz profila
     cur.execute("SELECT 1 FROM sledilec WHERE sledilec=%s AND zasledovani=%s",[uporabnik_prijavljen,uporabnik])
     ali_sledi = (True if cur.fetchone() else False)
@@ -752,8 +759,7 @@ def pokazi_sledilce(uporabnik):
     sledilci = cur.fetchall()
     # Koliko sledilcev ima ta uporabnik?
     st_s = len(sledilci)
-    cur.execute("SELECT ime, priimek FROM uporabnik WHERE uporabnisko_ime=%s", [uporabnik])
-    (ime,priimek) = cur.fetchone()
+    (ime,priimek) = dobi_ime(uporabnik)
     return bottle.template("sledilci.html",
                            uporabnik=uporabnik,
                            ime=ime_prijavljen,
@@ -779,8 +785,7 @@ def pokazi_zasledovane(uporabnik):
     # Koliko ljudi zasleduje ta uporabnik?
     cur.execute("SELECT COUNT(*) FROM sledilec WHERE sledilec=%s", [uporabnik])
     (st_z,) = cur.fetchone()
-    cur.execute("SELECT ime, priimek FROM uporabnik WHERE uporabnisko_ime=%s", [uporabnik])
-    (ime,priimek) = cur.fetchone()
+    (ime,priimek) = dobi_ime(uporabnik)
     return bottle.template("zasledovani.html",
                            uporabnik=uporabnik,
                            ime=ime_prijavljen,
@@ -989,32 +994,72 @@ def moji_dogodki(uporabnik):
                             sporocilo=sporocilo,
                             uporabnik_prijavljen=uporabnik_prijavljen)
 
-@bottle.get('/uporabnik/<uporabnik>/moje-aktivnosti/')
+@bottle.get('/uporabnik/<uporabnik>/aktivnosti/')
 def pokazi_aktivnost(uporabnik):
     """Pokaži stran vseh aktivnostmi, ki zanimajo uporabnika"""
     # Kdo je prijavljen?
     (uporabnik_prijavljen, ime_prijavljen,priimek_prijavljen) = get_user()
     aktivnosti_uporabnika = dobi_aktivnosti(uporabnik)
-    if uporabnik_prijavljen == uporabnik:
-        zasledovani_prijavljenega = [z[0] for z in zasledovani]
-    else:
-        zas = dobi_zasledovane(uporabnik=uporabnik_prijavljen)
-        zasledovani_prijavljenega = [z[0] for z in zas]
-    # Koliko ljudi zasleduje ta uporabnik?
-    cur.execute("SELECT COUNT(*) FROM sledilec WHERE sledilec=%s", [uporabnik])
-    (st_z,) = cur.fetchone()
-    cur.execute("SELECT ime, priimek FROM uporabnik WHERE uporabnisko_ime=%s", [uporabnik])
-    (ime,priimek) = cur.fetchone()
-    return bottle.template("zasledovani.html",
-                           uporabnik=uporabnik,
-                           ime=ime_prijavljen,
-                           priimek=priimek_prijavljen,
-                           st_z=st_z,
-                           profil_ime=ime,
+    ap = (aktivnosti_uporabnika if uporabnik_prijavljen == uporabnik else dobi_aktivnosti(uporabnik_prijavljen))
+    aktivnosti_prijavljenega = set()
+    for v in ap.values():
+        b = aktivnosti_prijavljenega.union(v)
+        aktivnosti_prijavljenega = b
+    ime_profil, priimek_profil = dobi_ime(uporabnik)
+    sporocilo = get_sporocilo()
+    vse_aktivnosti = []
+    if uporabnik == uporabnik_prijavljen:
+        # V tem primeru bomo potrebovali listo vseh aktivnosti
+        cur.execute("""SELECT ime FROM aktivnost ORDER BY ime""")
+        for a in cur:
+            vse_aktivnosti.append(a[0])
+    return bottle.template("aktivnosti.html",
                            uporabnik_prijavljen=uporabnik_prijavljen,
-                           zasledovani_prijavljenega=zasledovani_prijavljenega,
-                           profil_priimek=priimek,
-                           zasledovani=zasledovani)
+                           ime=ime_prijavljen,
+                           aktivnosti=aktivnosti_uporabnika,
+                           aktivnosti_prijavljenega=aktivnosti_prijavljenega,
+                           priimek=priimek_prijavljen,
+                           uporabnik=uporabnik,
+                           profil_ime=ime_profil,
+                           profil_priimek=priimek_profil,
+                           sporocilo=sporocilo,
+                           vse_aktivnosti=vse_aktivnosti)
+
+@bottle.get('/<uporabnik>/<aktivnost>/odstrani/')
+def odstrani_aktivnost(uporabnik, aktivnost):
+    """Odstranimo aktivnost s seznama aktivnosti, ki zanimajo upoorabnika"""
+    # Kdo je prijavljen?
+    (uporabnik_prijavljen, ime_prijavljen,priimek_prijavljen) = get_user()
+    cur.execute("""
+    DELETE FROM se_ukvarja 
+    WHERE uporabnisko_ime=%s AND se_ukvarja.id_aktivnost IN
+    (SELECT id FROM aktivnost WHERE aktivnost.ime=%s)
+    """, [uporabnik_prijavljen, aktivnost])
+    set_sporocilo("alert-success", "Uspešno ste zbrisali aktivnost!")
+    conn.commit()
+    return bottle.redirect('/uporabnik/{}/aktivnosti/#{}'.format(uporabnik,aktivnost))
+
+@bottle.get('/<uporabnik>/<aktivnost>/dodaj/')
+def odstrani_aktivnost(uporabnik, aktivnost):
+    """Dodamo aktivnost v seznama aktivnosti, ki zanimajo upoorabnika"""
+    # Kdo je prijavljen?
+    (uporabnik_prijavljen, ime_prijavljen,priimek_prijavljen) = get_user()
+    cur.execute("""
+    INSERT INTO se_ukvarja SELECT %s, id FROM aktivnost WHERE ime=%s
+    """, [uporabnik_prijavljen, aktivnost])
+    set_sporocilo("alert-success", "Uspešno ste dodali aktivnost!")
+    conn.commit()
+    return bottle.redirect('/uporabnik/{}/aktivnosti/#{}'.format(uporabnik,aktivnost))
+
+@bottle.post('/uporabnik/<uporabnik>/aktivnosti/')
+def dodaj_aktivnost(uporabnik):
+    aktivnost = bottle.request.forms.izbrana_aktivnost
+    cur.execute("""
+    INSERT INTO se_ukvarja SELECT %s, id FROM aktivnost WHERE ime=%s
+    """, [uporabnik, aktivnost])
+    set_sporocilo("alert-success", "Uspešno ste dodali aktivnost!")
+    conn.commit()
+    return bottle.redirect('/uporabnik/{}/aktivnosti/'.format(uporabnik,aktivnost))
 ######################################################################
 # Glavni program
 

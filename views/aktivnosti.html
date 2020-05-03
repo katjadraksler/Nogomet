@@ -1,0 +1,53 @@
+%rebase('osnova.html', title=profil_ime + ' ' + profil_priimek)
+
+% include('orodna-vrstica.html')
+
+%if sporocilo:
+  <div class="alert {{sporocilo[0]}} alert-dismissable">{{sporocilo[1]}}
+    <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+  </div>
+%end
+
+<div class="d-flex justify-content-between align-items-center p-2 pt-4">
+  <h2>Moje aktivnosti</h2>
+  %if uporabnik == uporabnik_prijavljen:
+  <button class="btn btn-outline-info" type="button" data-toggle="collapse" data-target="#collapseExample" aria-expanded="false" aria-controls="collapseExample">
+    Dodaj aktivnost
+  </button>
+  %end
+</div>
+  <div class="collapse" id="collapseExample">
+    <form class="form-inline" method="post" action=".">
+        <div class="form-group mx-sm-3 mb-2">
+          <select class="custom-select d-block" name="izbrana_aktivnost" id="izbrana_aktivnost">
+            <option value="">Izberi aktivnost</option>
+            %for ak in vse_aktivnosti:
+            %if ak not in aktivnosti_prijavljenega:
+            <option>{{ak}}</option>
+            %end
+            %end
+          </select>
+        </div>
+        <button type="submit" class="btn btn-outline-success mb-2">Dodaj aktivnost</button>
+      </form>
+  </div>
+
+<div class="container m-3">
+    %for tip in aktivnosti.keys():
+    <h4>{{tip.capitalize()}}</h4>
+    %for aktivnost in aktivnosti[tip]:
+    <a name="{{aktivnost}}">
+        <div class="rounded shadow d-flex justify-content-between align-items-center p-3 my-3">
+            <strong class="text-gray-dark">{{aktivnost.capitalize()}}</strong>
+            <div>
+                %if aktivnost in aktivnosti_prijavljenega:
+                <a class="btn btn-outline-danger mr-3" href="/{{uporabnik}}/{{aktivnost}}/odstrani/">Odstrani</a>
+                %else:
+                <a class="btn btn-outline-success mr-3" href="/{{uporabnik}}/{{aktivnost}}/dodaj/">Dodaj</a>
+                %end
+            </div>
+        </div>
+    </a>
+    %end
+    %end
+</div>
