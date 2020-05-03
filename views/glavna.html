@@ -1,39 +1,13 @@
 %rebase('osnova.html', title='AktiNet')
 
-% include('orodna-vrstica-glavna-stran.html')
-
 <style>
   div.a {text-transform: uppercase;}
-
-  .button1 {
-    background-color: #008CBA;
-    border: none;
-    border-radius: 4px;
-    color: white;
-    padding: 7px 15px;
-    text-align: center;
-    text-decoration: none;
-    display: inline-block;
-    font-size: 16px;
-    margin: 4px 2px;
-    cursor: pointer;
+  .span{
+     display:block;
+     color: rgba(0, 0, 0, 0.517);
+     font-size: 0.9rem;
   }
-
-  .button2 {
-    background-color: #008CBA;
-    border: none;
-    border-radius: 4px;
-    color: white;
-    padding: 7px 15px;
-    text-align: center;
-    text-decoration: none;
-    display: inline-block;
-    font-size: 16px;
-    margin: 4px 2px;
-    cursor: pointer;
-  }
-  </style>
-
+</style>
 
 %if sporocilo:
   <div class="alert {{sporocilo[0]}} alert-dismissable">{{sporocilo[1]}}
@@ -41,7 +15,7 @@
   </div>
 %end
 
-<h3 class="p-2 pt-4">PRIPOROČENI DOGODKI</h3>
+<h3 class="p-2 pt-4">Priporočeni dogodki</h3>
 
 %for (organizator_ime,organizator_priimek,aktivnost,datum,kraj) in dogodki:
 <div class="card card-body">
@@ -67,30 +41,7 @@
 %end
 </div>
 
-
-<head>
-  <script src="https://ajax.googleapis.com/ajax/libs/jquery/3.4.1/jquery.min.js">
-  </script>
-  <script>
-    $(document).ready(function(){
-      $(".button1").click(function(){
-        $("p").slideUp('slow');
-      });
-      $(".button2").click(function(){
-        $("p").slideDown('slow');
-      });
-    });
-  </script>
-</head>
-<body>
-  <button class="button1">Manj</button>
-  <button class="button2">Več</button> 
-</body>
-
-
-
-
-<h3 class="p-2 pt-4">NAJNOVEJŠE OBJAVE</h3>
+<h3 class="p-2 pt-4">Najnovejše objave</h3>
 
 %for (tid,avtor,avtor_ime, avtor_priimek,cas,vsebina,komentarji) in traci:
 <div class="my-3 p-3 bg-white rounded shadow">
