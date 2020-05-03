@@ -22,9 +22,9 @@ CREATE TABLE posta (
 CREATE TABLE lokacija (
     id SERIAL PRIMARY KEY,
     ulica TEXT NOT NULL,
-    hisna_stevilka TEXT NOT NULL,
+    hisna_stevilka TEXT,
     id_posta INTEGER REFERENCES posta(id),
-    UNIQUE (ulica, hisna_stevilka,id_posta)
+    UNIQUE (ulica, hisna_stevilka, id_posta)
 );
 
 CREATE TABLE uporabnik (
@@ -102,6 +102,10 @@ CREATE TABLE sporocila (
     CHECK (posiljatelj <> prejemnik)
 );
 
+GRANT ALL ON DATABASE sem2020_katjad TO katjad;
+GRANT ALL ON SCHEMA public TO katjad;
+GRANT ALL ON ALL TABLES IN SCHEMA public TO katjad;
+GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO katjad;
 GRANT ALL ON DATABASE sem2020_katjad TO gasperm;
 GRANT ALL ON SCHEMA public TO gasperm;
 GRANT ALL ON ALL TABLES IN SCHEMA public TO gasperm;

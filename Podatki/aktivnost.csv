@@ -1,128 +1,128 @@
 id,ime,tip
 1,troskok,1
-2,skok_v_visino,1
-3,skok_ob_palici,1
+2,skok v visino,1
+3,skok ob palici,1
 4,sprint,1
-5,tek_na_srednje_proge,1
-6,tek_na_dolge_proge,1
+5,tek na srednje proge,1
+6,tek na dolge proge,1
 7,maraton,1
 8,kros,1
-9,tek_cez_ovire,1
-10,met_diska,1
-11,met_kopja,1
-12,suvanje_krogle,1
-13,met_kladiva,1
-14,tekma_kamel,2
-15,petelinja_bitka,2
+9,tek cez ovire,1
+10,met diska,1
+11,met kopja,1
+12,suvanje krogle,1
+13,met kladiva,1
+14,tekma kamel,2
+15,petelinja bitka,2
 16,kasastvo,2
-17,dresurno_jahanje,2
+17,dresurno jahanje,2
 18,polo,2
-19,pasja_dirka,2
-20,preskakovanje_ovir,2
+19,pasja dirka,2
+20,preskakovanje ovir,2
 21,aikido,3
 22,boks,3
-23,dzu_dzitsu,3
+23,dzu dzitsu,3
 24,judo,3
 25,karate,3
 26,kendo,3
-27,kung_fu,3
+27,kung fu,3
 28,sabljanje,3
 29,savate,3
 30,sumo,3
 31,taekwondo,3
 32,rokoborba,3
 33,kickboxing,3
-34,cestno_kolesarstvo,4
-35,dirkaliscno_kolesarstvo,4
-36,gorsko_kolesarstvo,4
+34,cestno kolesarstvo,4
+35,dirkaliscno kolesarstvo,4
+36,gorsko kolesarstvo,4
 37,triatlon,4
-38,bungee_jumping,5
+38,bungee jumping,5
 39,motokros,5
 40,rolkanje,5
 41,deskanje,5
 42,rolanje,5
 43,aerobika,6
-44,sportna_gimnastika,6
-45,ritmicna_gimnastika,6
-46,sportna_akrobatika,6
+44,sportna gimnastika,6
+45,ritmicna gimnastika,6
+46,sportna akrobatika,6
 47,trampolin,6
 48,karting,7
-49,dirka_z_avtomobili,7
-50,formula_1,7
-51,dirka_s_colni,7
-52,dirka_z_motorji,7
+49,dirka z avtomobili,7
+50,formula 1,7
+51,dirka s colni,7
+52,dirka z motorji,7
 53,aerobatika,8
 54,modelarstvo,8
 55,balonarstvo,8
 56,jamarstvo,8
 57,jadralstvo,8
-58,jadralno_letalstvo,8
-59,jadralno_padalstvo,8
+58,jadralno letalstvo,8
+59,jadralno padalstvo,8
 60,gornistvo,8
 61,alpinizem,8
-62,sportno_plezanje,8
-63,odbojka_na_mivki,8
+62,sportno plezanje,8
+63,odbojka na mivki,8
 64,orientacija,8
 65,padalstvo,8
 66,potapljastvo,8
 67,smucanje,8
 68,sankanje,8
 69,bodybuilding,9
-70,dviganje_utezi,9
-71,polaganje_rok,9
+70,dviganje utezi,9
+71,polaganje rok,9
 72,badminton,10
 73,tenis,10
 74,skvos,10
-75,namizni_tenis,10
-76,hokej_na_kotalkah,11
-77,hokej_na_ledu,11
-78,hokej_na_rolerjih,11
-79,hitrostno_drsanje,11
-80,vertikalno_rolkanje,11
-81,alpsko_smucanje,12
-82,nordijsko_smucanje,12
-83,deskanje_na_snegu,12
-84,turno_smucfanje,12
-87,lokostrelstvo,14
-88,bilijard,14
-89,bowling,14
-90,kegljanje,14
-91,kriket,14
-92,curling,14
-93,pikado,14
-94,namizni_nogomet,14
-95,golf,14
-96,metanje_podkve,14
-97,balinanje,14
-98,petanke,14
-99,streljanje,14
-100,airsoft,15
-101,ameriski_nogomet,15
-102,baseball,15
-103,floorball,15
-104,hokej_na_travi,15
-105,kosarka,15
-106,lacrosse,15
-107,nogomet,15
-108,odbojka,15
-109,podvodni_hokej,15
-110,rokomet,15
-111,paintball,15
-112,rugby,15
-113,softball,15
-114,ultimate_frizbi,15
-115,vaterpolo,15
-116,plavanje,16
-117,sinhrono_plavanje,16
-118,skoki_v_vodo,16
-119,skoki_v_vodo_z_velikih_visin,16
-120,hitrostno_potapljanje_in_plavanje_s_plavutmi,16
-121,surfanje,16
-122,kajakastvo,16
-123,bridz,17
-124,sah,17
-125,dama,17
-126,poker,17
-127,tarok,17
-128,go,17
-129,domino,17
+75,namizni tenis,10
+76,hokej na kotalkah,11
+77,hokej na ledu,11
+78,hokej na rolerjih,11
+79,hitrostno drsanje,11
+80,vertikalno rolkanje,11
+81,alpsko smucanje,12
+82,nordijsko smucanje,12
+83,deskanje na snegu,12
+84,turno smucfanje,12
+87,lokostrelstvo,13
+88,bilijard,13
+89,bowling,13
+90,kegljanje,13
+91,kriket,13
+92,curling,13
+93,pikado,13
+94,namizni nogomet,13
+95,golf,13
+96,metanje podkve,13
+97,balinanje,13
+98,petanke,13
+99,streljanje,13
+100,airsoft,14
+101,ameriski nogomet,14
+102,baseball,14
+103,floorball,14
+104,hokej na travi,14
+105,kosarka,14
+106,lacrosse,14
+107,nogomet,14
+108,odbojka,14
+109,podvodni hokej,14
+110,rokomet,14
+111,paintball,14
+112,rugby,14
+113,softball,14
+114,ultimate frizbi,14
+115,vaterpolo,14
+116,plavanje,15
+117,sinhrono plavanje,15
+118,skoki v vodo,15
+119,skoki v vodo z velikih visin,15
+120,hitrostno potapljanje in plavanje s plavutmi,15
+121,surfanje,15
+122,kajakastvo,15
+123,bridz,16
+124,sah,16
+125,dama,16
+126,poker,16
+127,tarok,16
+128,go,16
+129,domino,16
