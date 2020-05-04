@@ -16,7 +16,8 @@
   </button>
   %end
 </div>
-  <div class="collapse" id="collapseExample">
+%if uporabnik == uporabnik_prijavljen:
+<div class="collapse" id="collapseExample">
     <form class="form-inline" method="post" action=".">
         <div class="form-group mx-sm-3 mb-2">
           <select class="custom-select d-block" name="izbrana_aktivnost" id="izbrana_aktivnost">
@@ -31,6 +32,7 @@
         <button type="submit" class="btn btn-outline-success mb-2">Dodaj aktivnost</button>
       </form>
   </div>
+  %end
 
 <div class="container m-3">
     %for tip in aktivnosti.keys():
