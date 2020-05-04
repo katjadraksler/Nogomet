@@ -6,8 +6,9 @@ import bottle
 import hashlib # računanje MD5 kriptografski hash za gesla
 from datetime import datetime, date
 
+
 # uvozimo ustrezne podatke za povezavo
-import auth_public as auth
+import auth_katja as auth
 
 # uvozimo psycopg2
 import psycopg2, psycopg2.extensions, psycopg2.extras
@@ -234,6 +235,142 @@ def objave_prijateljev( uporabnik=None):
     return ((oid, u, i, p, pretty_date(int(c)), v, komentar[oid])
             for (oid, u, i, p, c, v) in objave)
 
+def dobi_dogodke( uporabnik=None):
+    cur.execute("""SELECT * FROM pregledni_dogodki 
+                    WHERE aktivnost_id IN
+                    (SELECT aktivnost.id FROM
+                    tip_aktivnosti JOIN (aktivnost JOIN se_ukvarja ON aktivnost.id = se_ukvarja.id_aktivnost)
+                    ON tip_aktivnosti.id = aktivnost.tip
+                    WHERE se_ukvarja.uporabnisko_ime = %s) 
+                    AND NOT pregledni_dogodki.organizator = %s 
+                    AND pregledni_dogodki.datum > NOW()
+                    LIMIT 10
+                    """, [uporabnik, uporabnik])
+
+    dogodki = tuple(cur)
+    ids = (dogodek[0] for dogodek in dogodki)
+    cur.execute("""SELECT id,  udelezba.udelezenec FROM
+            (udelezba JOIN pregledni_dogodki ON udelezba.id_dogodek = pregledni_dogodki.id)
+            WHERE id IN
+            (SELECT id FROM pregledni_dogodki 
+                            WHERE aktivnost_id IN
+                            (SELECT aktivnost.id FROM
+                            tip_aktivnosti JOIN (aktivnost JOIN se_ukvarja ON aktivnost.id = se_ukvarja.id_aktivnost)
+                            ON tip_aktivnosti.id = aktivnost.tip
+                            WHERE se_ukvarja.uporabnisko_ime = %s) 
+                            AND NOT pregledni_dogodki.organizator = %s 
+                            AND pregledni_dogodki.datum > NOW()
+                            LIMIT 10) """, 
+                            [uporabnik, uporabnik])
+
+    udelezenec = {id : [] for id in ids }
+
+    for (id, udel) in cur:
+        udelezenec[id].append((udel))
+
+    return ((id,b,c,d,e,f,g,h,i,j,k,l,m,n,o,(udelezenec[id]))
+            for (id,b,c,d,e,f,g,h,i,j,k,l,m,n,o) in dogodki)
+
+
+def dobi_dogodke__parametri (aktivnost, tip, datum_od, datum_do, ulica, kraj, organizator,
+                    ime_organizator, priimek_organizator, udelezenec, ime_udelezenec, priimek_udelezenec, 
+                    aktivnost_BOOL = True, tip_BOOL = True, datum_od_BOOL = True, datum_do_BOOL = True,
+                    ulica_BOOL = True, kraj_BOOL = True, organizator_BOOL = True, ime_organizator_BOOL = True, 
+                    priimek_organizator_BOOL = True, udelezenec_BOOL = True, ime_udelezenec_BOOL = True, 
+                    priimek_udelezenec_BOOL = True):
+
+    if aktivnost:
+        aktivnost_BOOL = False
+    if tip:
+        tip_BOOL = False
+    if datum_od:
+        datum_od_BOOL = False
+    else:
+        datum_od = None
+    if datum_do:
+        datum_do_BOOL = False
+    else:
+        datum_do = None
+    if ulica:
+        ulica_BOOL = False
+    if kraj:
+        kraj_BOOL = False
+    if organizator:
+        organizator_BOOL = False
+    if ime_organizator:
+        ime_organizator_BOOL = False
+    if priimek_organizator:
+        priimek_organizator_BOOL = False
+    if udelezenec:
+        udelezenec_BOOL = False
+    if ime_udelezenec:
+        ime_udelezenec_BOOL = False
+    if priimek_udelezenec:
+        priimek_udelezenec_BOOL = False
+
+    cur.execute("""
+        SELECT id,aktivnost_id, ime_aktivnosti,tip_aktivnosti, organizator,
+                ime_organizator, priimek_organizator, stevilo_udelezencev, datum, cas, 
+                    hisna_stevilka, ulica, postna_stevilka, kraj, opis 
+                FROM
+                (udelezba LEFT JOIN uporabnik ON udelezba.udelezenec = uporabnik.uporabnisko_ime)
+                LEFT JOIN pregledni_dogodki ON udelezba.id_dogodek = pregledni_dogodki.id
+                WHERE (ime_aktivnosti = %s OR %s)
+                AND (tip_aktivnosti = %s OR %s)
+                AND (datum > %s OR %s)
+                AND (datum < %s OR %s)
+                AND (ulica = %s OR %s)
+                AND (kraj = %s OR %s)
+                AND (organizator = %s OR %s)
+                AND (ime_organizator = %s OR %s)
+                AND (priimek_organizator = %s OR %s)
+                AND (organizator = %s OR %s)
+                AND (uporabnik.ime = %s OR %s)
+                AND (uporabnik.priimek = %s OR %s)""",
+                [aktivnost, aktivnost_BOOL, tip, tip_BOOL, datum_od, datum_od_BOOL, datum_do, 
+                datum_do_BOOL, ulica, ulica_BOOL, kraj, kraj_BOOL, organizator, organizator_BOOL, 
+                ime_organizator, ime_organizator_BOOL, priimek_organizator, priimek_organizator_BOOL,
+                udelezenec, udelezenec_BOOL, ime_udelezenec, ime_udelezenec_BOOL,
+                priimek_udelezenec, priimek_udelezenec_BOOL])
+    
+    dogodki = tuple(cur)
+    ids = (dogodek[0] for dogodek in dogodki)
+
+    cur.execute("""SELECT pregledni_dogodki.id, udelezba.udelezenec FROM
+            ((udelezba JOIN pregledni_dogodki ON udelezba.id_dogodek = pregledni_dogodki.id)
+            LEFT JOIN uporabnik ON udelezba.udelezenec = uporabnik.uporabnisko_ime)
+            WHERE pregledni_dogodki.id IN
+                (SELECT id FROM
+                    (udelezba LEFT JOIN uporabnik ON udelezba.udelezenec = uporabnik.uporabnisko_ime)
+                    LEFT JOIN pregledni_dogodki ON udelezba.id_dogodek = pregledni_dogodki.id
+                    WHERE (ime_aktivnosti = %s OR %s)
+                    AND (tip_aktivnosti = %s OR %s)
+                    AND (datum > %s OR %s)
+                    AND (datum < %s OR %s)
+                    AND (ulica = %s OR %s)
+                    AND (kraj = %s OR %s)
+                    AND (organizator = %s OR %s)
+                    AND (ime_organizator = %s OR %s)
+                    AND (priimek_organizator = %s OR %s)
+                    AND (organizator = %s OR %s)
+                    AND (uporabnik.ime = %s OR %s)
+                    AND (uporabnik.priimek = %s OR %s))
+                """, 
+                    [aktivnost, aktivnost_BOOL, tip, tip_BOOL, datum_od, datum_od_BOOL, datum_do, 
+                    datum_do_BOOL, ulica, ulica_BOOL, kraj, kraj_BOOL, organizator, organizator_BOOL, 
+                    ime_organizator, ime_organizator_BOOL, priimek_organizator, priimek_organizator_BOOL,
+                    udelezenec, udelezenec_BOOL, ime_udelezenec, ime_udelezenec_BOOL,
+                    priimek_udelezenec, priimek_udelezenec_BOOL])
+
+    udelezenec = {id : [] for id in ids }
+
+    for (id, udel) in cur:
+        udelezenec[id].append((udel))
+
+    return ((id,b,c,d,e,f,g,h,i,j,k,l,m,n,o,(udelezenec[id]))
+            for (id,b,c,d,e,f,g,h,i,j,k,l,m,n,o) in dogodki)
+
+
 def upravljaj_sledilca(uporabnik, hoce_slediti):
     """Prijavljen uporabnik bo zacel oz. nehal slediti uporabniku."""
     (uporabnik_prijavljen,ime, priimek) = get_user()
@@ -291,25 +428,11 @@ def main():
     ts = objave_prijateljev(uporabnik=str(uporabnik_prijavljen))
 
     #Dogodki, ki bi glede na zanimanje zanimali uporabnika
-    cur.execute("""SELECT uporabnik.ime, uporabnik.priimek, 
-                    REPLACE(aktivnost.ime, '_', ' ') as aktivnost, dogodek.datum,posta.kraj
-                    FROM
-                    (((dogodek LEFT JOIN aktivnost ON dogodek.id_aktivnost = aktivnost.id)
-                    LEFT JOIN
-                    uporabnik ON dogodek.organizator = uporabnik.uporabnisko_ime)
-                    LEFT JOIN lokacija ON dogodek.id_lokacija = lokacija.id)
-                    LEFT JOIN posta ON lokacija.id_posta = posta.id
-                    WHERE aktivnost.id IN
-                    (SELECT aktivnost.id FROM
-                    tip_aktivnosti JOIN (aktivnost JOIN se_ukvarja ON aktivnost.id = se_ukvarja.id_aktivnost)
-                    ON tip_aktivnosti.id = aktivnost.tip
-                    WHERE se_ukvarja.uporabnisko_ime = %s) AND NOT dogodek.organizator = %s AND dogodek.datum > NOW()
-                    LIMIT 10
-                    """, [uporabnik_prijavljen, uporabnik_prijavljen])
+    dogodki = dobi_dogodke(uporabnik = str(uporabnik_prijavljen))
 
     return bottle.template("glavna.html",
-                            dogodki = cur,
                             traci=ts,
+                            dogodki = dogodki,
                             ime=ime,
                             priimek=priimek,
                             uporabnik_prijavljen=uporabnik_prijavljen,
@@ -328,7 +451,7 @@ def nov_dogodek(uporabnik):
         set_sporocilo("alert-danger", "Nedovoljena objava dogodka z drugim uporabniskim imenom!")
         return bottle.redirect("/")
     
-    cur.execute("SELECT REPLACE(aktivnost.ime, '_', ' ') FROM aktivnost ORDER BY aktivnost.ime")
+    cur.execute("SELECT aktivnost.ime FROM aktivnost ORDER BY aktivnost.ime")
 
     return bottle.template("dodaj_dogodek.html",
                            ime=ime,
@@ -380,7 +503,7 @@ def dodaj_dogodek(uporabnik):
         set_sporocilo("alert-danger", "Aktivnost je obvezen argument")
         return bottle.redirect("/")
     else:
-        cur.execute("SELECT aktivnost.id FROM aktivnost WHERE aktivnost.ime = REPLACE(%s, ' ', '_')",
+        cur.execute("SELECT aktivnost.id FROM aktivnost WHERE aktivnost.ime = %s",
                             [aktivnost])          
         (aktivnost,) = cur.fetchone()
 
@@ -440,17 +563,76 @@ def dodaj_dogodek(uporabnik):
         id_lokacija = None
     
     #Vstavimo podatke v dogodek
-    print('STEVILO UDELEZENCEV', stevilo_udelezencev)
     cur.execute("""INSERT INTO dogodek (organizator,id_aktivnost,opis,datum, cas, id_lokacija, stevilo_udelezencev) 
                 VALUES (%s, %s, %s, %s, %s, %s, %s)""",
                 [uporabnik_prijavljen,aktivnost,opis, datum, cas, id_lokacija, stevilo_udelezencev])
-    print(uporabnik_prijavljen,aktivnost,opis,datum,cas,id_lokacija)
 
     conn.commit()
     
 
     set_sporocilo("alert-success", "Uspešno si dodal dogodek")
     return bottle.redirect("/")
+
+@bottle.get("/uporabnik/<uporabnik>/poisci_dogodke/")
+def poisci_dogodek(uporabnik):
+    """Glavna stran."""
+    # Iz cookieja dobimo uporabnika (ali ga preusmerimo na login, če
+    # nima cookija)
+
+    (uporabnik_prijavljen, ime, priimek) = get_user()
+
+    if uporabnik_prijavljen != uporabnik:
+    # Ne dovolimo dostopa urejanju podatkov drugim uporabnikom
+        set_sporocilo("alert-danger", "Nedovoljena objava dogodka z drugim uporabniskim imenom!")
+        return bottle.redirect("/")
+    
+    cur.execute("SELECT aktivnost.ime FROM aktivnost ORDER BY aktivnost.ime")
+    aktivnosti = cur.fetchall()
+    cur.execute("SELECT tip_aktivnosti.tip FROM tip_aktivnosti ORDER BY tip_aktivnosti.tip")
+    tipi = cur.fetchall()
+
+    return bottle.template("poisci-dogodke.html",
+                           ime=ime,
+                           priimek=priimek,
+                           aktivnosti = aktivnosti,
+                           tipi = tipi,
+                           uporabnik_prijavljen=uporabnik_prijavljen,
+                           dogodki=[])
+
+@bottle.post("/uporabnik/<uporabnik>/poisci_dogodke/")
+def vrni_dogodke(uporabnik):
+
+    (uporabnik_prijavljen, ime, priimek) = get_user()
+
+    aktivnost = bottle.request.forms.aktivnost
+    tip = bottle.request.forms.tip
+    datum_od = bottle.request.forms.datum_od
+    datum_do = bottle.request.forms.datum_do
+    ulica = bottle.request.forms.ulica
+    kraj = bottle.request.forms.kraj
+    organizator = bottle.request.forms.organizator
+    ime_organizator = bottle.request.forms.ime_organizator
+    priimek_organizator = bottle.request.forms.priimek_organizator
+    udelezenec = bottle.request.forms.udelezenec
+    ime_udelezenec = bottle.request.forms.ime_udelezenec
+    priimek_udelezenec = bottle.request.forms.priimek_udelezenec
+
+    dogodki = dobi_dogodke__parametri (aktivnost, tip, datum_od, datum_do, ulica, kraj, organizator,
+                    ime_organizator, priimek_organizator, udelezenec, ime_udelezenec, priimek_udelezenec)
+
+    cur.execute("SELECT aktivnost.ime FROM aktivnost ORDER BY aktivnost.ime")
+    aktivnosti = cur.fetchall()
+    cur.execute("SELECT tip_aktivnosti.tip FROM tip_aktivnosti ORDER BY tip_aktivnosti.tip")
+    tipi = cur.fetchall()
+
+    return bottle.template("poisci-dogodke.html",
+                           ime=ime,
+                           priimek=priimek,
+                           aktivnosti = aktivnosti,
+                           tipi = tipi,
+                           uporabnik_prijavljen=uporabnik_prijavljen,
+                           dogodki = dogodki)
+
 
 @bottle.get("/prijava/")
 def login_get():
@@ -483,32 +665,6 @@ def login_post():
         # Vse je v redu, nastavimo cookie in preusmerimo na glavno stran
         bottle.response.set_cookie('uporabnik', uporabnik, path='/', secret=secret)
         bottle.redirect("/")
-
-@bottle.get("/uporabnik/<uporabnik>/poisci_dogodke/")
-def poisci_dogodek(uporabnik):
-    """Glavna stran."""
-    # Iz cookieja dobimo uporabnika (ali ga preusmerimo na login, če
-    # nima cookija)
-
-    (uporabnik_prijavljen, ime, priimek) = get_user()
-
-    if uporabnik_prijavljen != uporabnik:
-    # Ne dovolimo dostopa urejanju podatkov drugim uporabnikom
-        set_sporocilo("alert-danger", "Nedovoljena objava dogodka z drugim uporabniskim imenom!")
-        return bottle.redirect("/")
-    
-    cur.execute("SELECT REPLACE(aktivnost.ime, '_', ' ') FROM aktivnost ORDER BY aktivnost.ime")
-    aktivnosti = cur.fetchall()
-    cur.execute("SELECT REPLACE(tip_aktivnosti.tip, '_', ' ') FROM tip_aktivnosti ORDER BY tip_aktivnosti.tip")
-    tip = cur.fetchall()
-
-    return bottle.template("poisci-dogodke.html",
-                           ime=ime,
-                           priimek=priimek,
-                           aktivnosti = aktivnosti,
-                           tipi = tip,
-                           uporabnik_prijavljen=uporabnik_prijavljen)
-
 
 @bottle.get("/odjava/")
 def logout():
@@ -627,9 +783,7 @@ def uredi_profil(uporabnik, sporocila=[]):
                            postna_stevilka=postna_stevilka,
                            sporocila=sporocila,
                            drzave=drzave)
-
-
-    
+  
 @bottle.post("/uporabnik/<uporabnik>/uredi_profil/")
 def sprememba(uporabnik):
     """Obdelaj formo za spreminjanje podatkov o uporabniku."""
@@ -997,7 +1151,6 @@ def moji_dogodki(uporabnik):
     cur.execute("""SELECT * FROM pregledni_dogodki
                     WHERE organizator = %s AND pregledni_dogodki.datum > NOW()  """, 
                     [uporabnik])
-    print(cur.fetchall())
     
     return bottle.template("moji_dogodki.html",
                             prihodnost = cur,
