@@ -1,0 +1,80 @@
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+
+<script>
+  $(document).ready(function() {
+    $('.header_background').click(function(e) {
+      $(this).next('.section').slideToggle('slow');
+      var img = $(this).find('img.expand_arrow')[0]; // the actual DOM element for the image
+      if (img.src.indexOf('expand-arrow.png') != -1) {
+        img.src  = 'images/collapse-arrow.png';
+      }
+      else {
+         img.src = 'images/expand-arrow.png';
+      }
+    });
+  });
+</script>
+
+<div class="card card-body">
+    <div class="card-deck list row">
+      <div class="list-row col-12">
+        <div class="row">
+          <div class="col-md-1 list-day">
+            <div id="flip"><img src="/static/favicon.ico" alt="" width="35" height="35" class="mr-2 rounded"></div>
+          </div>
+          <div class="col-md-5 list-title">
+            <div class="a"><b>{{ime_aktivnosti}}</b></div>
+            <p><b>{{tip}}</b></p>
+          </div>
+          <div class="col-md-4 list-hour">
+            <div class="a"><a><b>{{datum}}</b></a></div>
+            <p><b>{{cas}}</b></p>
+          </div>
+          <div class="col-md-2 list-hour">
+            <a class="btn btn-outline-primary mr-3" href="/{{uporabnik_prijavljen}}/{{id}}/pridruzi_se">Pridruži se</a>
+          </div>
+        </div>
+      </div>
+      <div class="list-row col-12">
+        <div class="header_background" >
+          <div class="sub_header" style ="color:rgb(175, 171, 171)"><small>več</small></div>
+        </div>
+        <div class="section" style="display:none"> 
+          <div class="row">
+            <div class="col-md-1 list-day"></div>
+            <div class="col-md-5 list-title">
+              <div style ="color:rgb(128, 115, 115)">Organizator:</div>
+              <p style ="color:rgb(128, 115, 115)">{{ime_organizator}} {{priimek_organizator}}
+              <br><a class="trac-uporabnik" href="/uporabnik/{{organizator}}/">@{{organizator}}</a></p>
+            </div>
+            <div class="col-md-4 list-title">
+              <div style ="color:rgb(128, 115, 115)">Lokacija:</div>
+              <p style ="color:rgb(128, 115, 115)">{{ulica}} {{hisna_stevilka}}
+                <br>{{postna_stevilka}} {{kraj}}</p>
+            </div>
+            <div class="col-md-2 list-title">
+              <div style ="color:rgb(128, 115, 115)">Število mest:</div>
+              <p style ="color:rgb(128, 115, 115)">{{stevilo_udelezencev}}</p>
+            </div>
+          </div>       
+          <div class="row">
+            <div class="col-md-1 list-day"></div>
+            <div class="col-md-9 list-title">
+              <div style ="color:rgb(128, 115, 115)">Opis:</div>
+              <p style ="color:rgb(128, 115, 115)">{{opis}}</p>
+            </div>
+            <div class="col-md-2 list-title">
+              <p style ="color:rgb(128, 115, 115)"></p>
+                <div style ="color:rgb(128, 115, 115)">Udelezenci:</div>
+                %for udelezenec in udelezenci:
+                <a class="trac-uporabnik" href="/uporabnik/{{udelezenec}}/">@{{udelezenec}}</a><br>
+                %end
+              </p>
+            </div>
+          </div>    
+      </div>
+    </div>
+  </div>
+</div>
+
+
