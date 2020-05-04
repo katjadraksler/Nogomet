@@ -18,7 +18,7 @@
     </div>
     %if uporabnisko_ime_zasledovani in zasledovani_prijavljenega:
     <a class="btn btn-outline-secondary mr-3" href="/{{uporabnik}}/{{uporabnisko_ime_zasledovani}}/zasledovani/prenehaj">Prenehaj slediti</a>
-    %else:
+    %elif uporabnisko_ime_zasledovani != uporabnik_prijavljen:
     <a class="btn btn-outline-primary mr-3" href="/{{uporabnik}}/{{uporabnisko_ime_zasledovani}}/zasledovani/pricni">Sledi</a>
     %end
     <a class="btn btn-outline-success" href="/uporabnik/{{uporabnik}}/sporocila/{{uporabnisko_ime_zasledovani}}/#text-polje">Pošlji sporočilo</a>
