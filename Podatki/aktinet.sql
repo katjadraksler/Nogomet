@@ -102,6 +102,21 @@ CREATE TABLE sporocila (
     CHECK (posiljatelj <> prejemnik)
 );
 
+CREATE VIEW pregledni_dogodki AS(
+    SELECT dogodek.id, aktivnost.id AS aktivnost_id, aktivnost.ime AS ime_aktivnosti, tip_aktivnosti.tip AS tip_aktivnosti, dogodek.organizator, 
+    uporabnik.ime AS ime_organizator, uporabnik.priimek AS priimek_organizator, 
+    dogodek.stevilo_udelezencev, dogodek.datum, dogodek.cas, lokacija.hisna_stevilka, lokacija.ulica,
+    posta.postna_stevilka, posta.kraj, dogodek.opis
+    FROM
+    ((((dogodek LEFT JOIN aktivnost ON dogodek.id_aktivnost = aktivnost.id) 
+    LEFT JOIN uporabnik ON uporabnik.uporabnisko_ime = dogodek.organizator)
+    LEFT JOIN lokacija ON dogodek.id_lokacija = lokacija.id)
+    LEFT JOIN posta ON lokacija.id_posta = posta.id)
+    LEFT JOIN tip_aktivnosti ON aktivnost.tip = tip_aktivnosti.id
+    ORDER BY dogodek.id 
+);
+
+
 GRANT ALL ON DATABASE sem2020_katjad TO katjad;
 GRANT ALL ON SCHEMA public TO katjad;
 GRANT ALL ON ALL TABLES IN SCHEMA public TO katjad;
@@ -110,3 +125,5 @@ GRANT ALL ON DATABASE sem2020_katjad TO gasperm;
 GRANT ALL ON SCHEMA public TO gasperm;
 GRANT ALL ON ALL TABLES IN SCHEMA public TO gasperm;
 GRANT ALL ON ALL SEQUENCES IN SCHEMA public TO gasperm;
+GRANT ALL ON pregledni_dogodki TO gasperm;
+GRANT ALL ON pregledni_dogodki TO katjad;

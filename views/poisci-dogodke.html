@@ -1,0 +1,83 @@
+%rebase('osnova.html')
+
+    <h5 class="col-md-12 mb-3 pt-4">Določi parametre</h5>
+    </div>
+    <form class="form-group" method="post" action=".">
+        <div class="row">
+            <div class="col-md-3 my-2 p-3 bg-white rounded box-shadow">
+                <form class="form-group" method="post" action=".">
+                    <div class="controls col-md-12 mb-3">
+                        <div class="form-group">
+                            <label for="aktivnost">Aktivnost</label>
+                            <select class="custom-select d-block w-100" name="aktivnost" id="aktivnost">
+                                <option value="">Izberi...</option>
+                                %for aktivnost in aktivnosti:
+                                <option>{{aktivnost[0]}}</option>
+                                %end
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="tip">Vrsta aktivnosti</label>
+                    
+                            <select class="custom-select d-block w-100" name="tip" id="tip">
+                                <option value="">Izberi...</option>
+                                %for tip in tipi:
+                                <option>{{tip[0]}}</option>
+                                %end
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <label for="datum_od">Od:</label>
+                            <input type="date" class="form-control" id="datum_od" name="datum_od">
+                        </div>
+                        <div class="form-group">
+                            <label for="datum_do">Do:</label>
+                            <input type="date" class="form-control" id="datum_do" name="datum_do">
+                        </div>
+                        <div class="form-group">
+                            <label for="kraj">Ulica:</label>
+                            <input type="text" class="form-control" id="ulica" name = "ulica">
+                        </div>
+                        <div class="form-group">
+                            <label for="kraj">Kraj:</label>
+                            <input type="text" class="form-control" id="kraj" name = "kraj">
+                        </div>
+                        <div class="form-group">
+                            <label for="organizator">Organizator:</label>
+                            <input type="text" class="form-control" id="organizator" name = "organizator" placeholder="@uporabniskoime">   
+                        </div>
+                        <div class="form-group">
+                            <input type="text" class="form-control" id="ime_organizator" name = "ime_organizator" placeholder ="Ime">
+                        </div>
+                        <div class="form-group">
+                                <input type="text" class="form-control" id="priimek_organizator" name = "priimek_organizator" placeholder ="Priimek">
+                        </div>
+                        <div class="form-group">
+                            <label for="udelezenec">Udeleženec:</label>
+                            <input type="text" class="form-control" id="udelezenec" name = "udelezenec" placeholder="@uporabniskoime">   
+                        </div>
+                        <div class="form-group">
+                            <input type="text" class="form-control" id="ime_udelezenec" name = "ime_udelezenec" placeholder ="Ime">
+                        </div>
+                        <div class="form-group">
+                            <input type="text" class="form-control" id="priimek_udelezenec" name = "priimek_udelezenec" placeholder ="Priimek">
+                        </div>
+                        <button class="btn btn-primary btn-lg btn-block" type="submit">Poišči</button>
+                    </div>
+                </form>
+            </div>
+            <div class="col-md-9 p-3 my-2">
+                %for (id, aktivnost_id, ime_aktivnosti, tip, organizator, ime_organizator, priimek_organizator, stevilo_udelezencev, datum,cas, hisna_stevilka, ulica, postna_stevilka, kraj, opis, udelezenci) in dogodki:
+                %include('dogodek.html')
+                <br>
+                %end
+            </div>
+            </div>
+        </div>
+
+    
+    </form>
+
+</div>
+
+

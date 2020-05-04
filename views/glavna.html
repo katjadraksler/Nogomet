@@ -1,14 +1,5 @@
 %rebase('osnova.html', title='AktiNet')
 
-<style>
-  div.a {text-transform: uppercase;}
-  .span{
-     display:block;
-     color: rgba(0, 0, 0, 0.517);
-     font-size: 0.9rem;
-  }
-</style>
-
 %if sporocilo:
   <div class="alert {{sporocilo[0]}} alert-dismissable">{{sporocilo[1]}}
     <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
@@ -17,26 +8,8 @@
 
 <h3 class="p-2 pt-4">Priporočeni dogodki</h3>
 
-%for (organizator_ime,organizator_priimek,aktivnost,datum,kraj) in dogodki:
-<div class="card card-body">
-  <div class="card-deck list row">
-    <div class="list-row col-12">
-      <div class="row">
-        <div class="col-md-1 list-day">
-          <img src="/static/favicon.ico" alt="" width="35" height="35" class="mr-2 rounded">
-        </div>
-         <div class="col-md-5 list-title">
-        <div class="a"><b>{{aktivnost}}</b></div>
-          <p>{{organizator_ime}} {{organizator_priimek}}</p>
-        </div>
-        <div class="col-md-2 list-hour">
-            <h6>{{datum}}</h6>
-            <p>{{kraj}}</p>
-        </div>
-      </div>
-    </div>
-  </div>
-</div>
+%for (id, aktivnost_id, ime_aktivnosti, tip, organizator, ime_organizator, priimek_organizator, stevilo_udelezencev, datum,cas, hisna_stevilka, ulica, postna_stevilka, kraj, opis, udelezenci) in dogodki:
+  %include('dogodek.html')
 <br>
 %end
 </div>
