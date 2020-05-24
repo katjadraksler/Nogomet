@@ -5,6 +5,7 @@
 import bottle
 import hashlib # računanje MD5 kriptografski hash za gesla
 from datetime import datetime, date
+import inflect
 
 
 # uvozimo ustrezne podatke za povezavo
@@ -605,6 +606,7 @@ def poisci_dogodek(uporabnik):
                            aktivnosti = aktivnosti,
                            tipi = tipi,
                            uporabnik_prijavljen=uporabnik_prijavljen,
+                           uporabnik = uporabnik_prijavljen,
                            dogodki=[])
 
 @bottle.post("/uporabnik/<uporabnik>/poisci_dogodke/")
@@ -639,6 +641,7 @@ def vrni_dogodke(uporabnik):
                            aktivnosti = aktivnosti,
                            tipi = tipi,
                            uporabnik_prijavljen=uporabnik_prijavljen,
+                           uporabnik=uporabnik_prijavljen,
                            dogodki = dogodki)
 
 

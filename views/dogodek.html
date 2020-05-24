@@ -1,19 +1,35 @@
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"></script>
+<style>
+  .gumb {
+    border: none;
+    background-color: inherit;
+    padding: 4px 16px;
+    font-size: 11px;
+    cursor: pointer;
+    display: inline-block;
+    color: gray;
+  }
+  .gumb1 {
+  border: none;
+  color: white;
+  padding: 10px 20px;
+  text-align: center;
+  text-decoration: none;
+  display: inline-block;
+  font-size: 15px;
+  cursor: pointer;
+  margin: 5px 3px;
+  transition-duration: 0.4s;
+  background-color: white; 
+  color: black; 
+  border: 2px solid rgb(115, 179, 190);
+  border-radius: 4px;
+}
 
-<script>
-  $(document).ready(function() {
-    $('.header_background').click(function(e) {
-      $(this).next('.section').slideToggle('slow');
-      var img = $(this).find('img.expand_arrow')[0]; // the actual DOM element for the image
-      if (img.src.indexOf('expand-arrow.png') != -1) {
-        img.src  = 'images/collapse-arrow.png';
-      }
-      else {
-         img.src = 'images/expand-arrow.png';
-      }
-    });
-  });
-</script>
+.gumb1:hover {
+  background-color: rgb(193, 226, 215);
+  color: rgb(0, 0, 0);
+}
+  </style>
 
 <div class="card card-body">
     <div class="card-deck list row">
@@ -26,20 +42,22 @@
             <div class="a"><b>{{ime_aktivnosti}}</b></div>
             <p><b>{{tip}}</b></p>
           </div>
-          <div class="col-md-4 list-hour">
+          <div class="col-md-3 list-hour">
             <div class="a"><a><b>{{datum}}</b></a></div>
             <p><b>{{cas}}</b></p>
           </div>
-          <div class="col-md-2 list-hour">
-            <a class="btn btn-outline-primary mr-3" href="/{{uporabnik_prijavljen}}/{{id}}/pridruzi_se">Pridruži se</a>
+          <div class="col-md-3 list-hour">
+            <a class="gumb1" href="/{{uporabnik_prijavljen}}/{{id}}/pridruzi_se">Pridruži se</a>
           </div>
         </div>
       </div>
       <div class="list-row col-12">
         <div class="header_background" >
-          <div class="sub_header" style ="color:rgb(175, 171, 171)"><small>več</small></div>
+          <button class="gumb" type="button" data-toggle="collapse" data-target="#dogodek{{id}}" aria-expanded="false" aria-controls="dogodek{{id}}">
+            več
+          </button>
         </div>
-        <div class="section" style="display:none"> 
+        <div class="collapse" id="dogodek{{id}}">
           <div class="row">
             <div class="col-md-1 list-day"></div>
             <div class="col-md-5 list-title">
@@ -47,23 +65,23 @@
               <p style ="color:rgb(128, 115, 115)">{{ime_organizator}} {{priimek_organizator}}
               <br><a class="trac-uporabnik" href="/uporabnik/{{organizator}}/">@{{organizator}}</a></p>
             </div>
-            <div class="col-md-4 list-title">
+            <div class="col-md-3 list-title">
               <div style ="color:rgb(128, 115, 115)">Lokacija:</div>
               <p style ="color:rgb(128, 115, 115)">{{ulica}} {{hisna_stevilka}}
                 <br>{{postna_stevilka}} {{kraj}}</p>
             </div>
-            <div class="col-md-2 list-title">
+            <div class="col-md-3 list-title">
               <div style ="color:rgb(128, 115, 115)">Število mest:</div>
               <p style ="color:rgb(128, 115, 115)">{{stevilo_udelezencev}}</p>
             </div>
           </div>       
           <div class="row">
             <div class="col-md-1 list-day"></div>
-            <div class="col-md-9 list-title">
+            <div class="col-md-8 list-title">
               <div style ="color:rgb(128, 115, 115)">Opis:</div>
               <p style ="color:rgb(128, 115, 115)">{{opis}}</p>
             </div>
-            <div class="col-md-2 list-title">
+            <div class="col-md-3 list-title">
               <p style ="color:rgb(128, 115, 115)"></p>
                 <div style ="color:rgb(128, 115, 115)">Udelezenci:</div>
                 %for udelezenec in udelezenci:

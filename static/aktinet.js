@@ -14,3 +14,18 @@ function isci(stolpci) {
 function seUjema(vsebina, vrednost) {
     return vsebina.toLocaleLowerCase().indexOf(vrednost.toLocaleLowerCase()) >= 0
 }
+
+src="https://ajax.googleapis.com/ajax/libs/jquery/2.1.1/jquery.min.js"
+
+$(document).ready(function() {
+    $('.header_background').click(function(e) {
+      $(this).next('.section').slideToggle('slow');
+      var img = $(this).find('img.expand_arrow')[0]; // the actual DOM element for the image
+      if (img.src.indexOf('expand-arrow.png') != -1) {
+        img.src  = 'images/collapse-arrow.png';
+      }
+      else {
+         img.src = 'images/expand-arrow.png';
+      }
+    });
+  });
