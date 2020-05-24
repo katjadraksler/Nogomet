@@ -273,7 +273,7 @@ def dobi_dogodke( uporabnik=None):
             for (id,b,c,d,e,f,g,h,i,j,k,l,m,n,o) in dogodki)
 
 
-def dobi_dogodke__parametri (aktivnost, tip, datum_od, datum_do, ulica, kraj, organizator,
+def dobi_dogodke_parametri (aktivnost, tip, datum_od, datum_do, ulica, kraj, organizator,
                     ime_organizator, priimek_organizator, udelezenec, ime_udelezenec, priimek_udelezenec, 
                     aktivnost_BOOL = True, tip_BOOL = True, datum_od_BOOL = True, datum_do_BOOL = True,
                     ulica_BOOL = True, kraj_BOOL = True, organizator_BOOL = True, ime_organizator_BOOL = True, 
@@ -310,12 +310,12 @@ def dobi_dogodke__parametri (aktivnost, tip, datum_od, datum_do, ulica, kraj, or
         priimek_udelezenec_BOOL = False
 
     cur.execute("""
-        SELECT id,aktivnost_id, ime_aktivnosti,tip_aktivnosti, organizator,
+        SELECT id,aktivnost_id, ime_aktivnosti, tip_aktivnosti, organizator,
                 ime_organizator, priimek_organizator, stevilo_udelezencev, datum, cas, 
                     hisna_stevilka, ulica, postna_stevilka, kraj, opis 
                 FROM
                 (udelezba LEFT JOIN uporabnik ON udelezba.udelezenec = uporabnik.uporabnisko_ime)
-                LEFT JOIN pregledni_dogodki ON udelezba.id_dogodek = pregledni_dogodki.id
+                RIGHT JOIN pregledni_dogodki ON udelezba.id_dogodek = pregledni_dogodki.id
                 WHERE (ime_aktivnosti = %s OR %s)
                 AND (tip_aktivnosti = %s OR %s)
                 AND (datum > %s OR %s)
@@ -325,25 +325,36 @@ def dobi_dogodke__parametri (aktivnost, tip, datum_od, datum_do, ulica, kraj, or
                 AND (organizator = %s OR %s)
                 AND (ime_organizator = %s OR %s)
                 AND (priimek_organizator = %s OR %s)
-                AND (organizator = %s OR %s)
+                AND (uporabnik.uporabnisko_ime = %s OR %s)
                 AND (uporabnik.ime = %s OR %s)
-                AND (uporabnik.priimek = %s OR %s)""",
+                AND (uporabnik.priimek = %s OR %s)
+                """,
                 [aktivnost, aktivnost_BOOL, tip, tip_BOOL, datum_od, datum_od_BOOL, datum_do, 
                 datum_do_BOOL, ulica, ulica_BOOL, kraj, kraj_BOOL, organizator, organizator_BOOL, 
                 ime_organizator, ime_organizator_BOOL, priimek_organizator, priimek_organizator_BOOL,
                 udelezenec, udelezenec_BOOL, ime_udelezenec, ime_udelezenec_BOOL,
                 priimek_udelezenec, priimek_udelezenec_BOOL])
+                
     
     dogodki = tuple(cur)
-    ids = (dogodek[0] for dogodek in dogodki)
+    nepodvojeni_dogodki = []
+    ids = []
+    for dogodek in dogodki:
+        if dogodek[0] not in ids:
+            ids.append(dogodek[0])
+            nepodvojeni_dogodki.append(dogodek)
+    nepodvojeni_dogodki = tuple(nepodvojeni_dogodki)
 
+    print(ids)
+
+    
     cur.execute("""SELECT pregledni_dogodki.id, udelezba.udelezenec FROM
             ((udelezba JOIN pregledni_dogodki ON udelezba.id_dogodek = pregledni_dogodki.id)
             LEFT JOIN uporabnik ON udelezba.udelezenec = uporabnik.uporabnisko_ime)
             WHERE pregledni_dogodki.id IN
                 (SELECT id FROM
                     (udelezba LEFT JOIN uporabnik ON udelezba.udelezenec = uporabnik.uporabnisko_ime)
-                    LEFT JOIN pregledni_dogodki ON udelezba.id_dogodek = pregledni_dogodki.id
+                    RIGHT JOIN pregledni_dogodki ON udelezba.id_dogodek = pregledni_dogodki.id
                     WHERE (ime_aktivnosti = %s OR %s)
                     AND (tip_aktivnosti = %s OR %s)
                     AND (datum > %s OR %s)
@@ -353,9 +364,10 @@ def dobi_dogodke__parametri (aktivnost, tip, datum_od, datum_do, ulica, kraj, or
                     AND (organizator = %s OR %s)
                     AND (ime_organizator = %s OR %s)
                     AND (priimek_organizator = %s OR %s)
-                    AND (organizator = %s OR %s)
+                    AND (uporabnik.uporabnisko_ime = %s OR %s)
                     AND (uporabnik.ime = %s OR %s)
                     AND (uporabnik.priimek = %s OR %s))
+                    
                 """, 
                     [aktivnost, aktivnost_BOOL, tip, tip_BOOL, datum_od, datum_od_BOOL, datum_do, 
                     datum_do_BOOL, ulica, ulica_BOOL, kraj, kraj_BOOL, organizator, organizator_BOOL, 
@@ -369,7 +381,7 @@ def dobi_dogodke__parametri (aktivnost, tip, datum_od, datum_do, ulica, kraj, or
         udelezenec[id].append((udel))
 
     return ((id,b,c,d,e,f,g,h,i,j,k,l,m,n,o,(udelezenec[id]))
-            for (id,b,c,d,e,f,g,h,i,j,k,l,m,n,o) in dogodki)
+            for (id,b,c,d,e,f,g,h,i,j,k,l,m,n,o) in nepodvojeni_dogodki)
 
 
 def upravljaj_sledilca(uporabnik, hoce_slediti):
@@ -440,6 +452,7 @@ def main():
     dogodki = dobi_dogodke(uporabnik = str(uporabnik_prijavljen))
 
     return bottle.template("glavna.html",
+                            stran = 'glavna',
                             traci=ts,
                             dogodki = dogodki,
                             ime=ime,
@@ -454,6 +467,7 @@ def nov_dogodek(uporabnik):
     # nima cookija)
 
     (uporabnik_prijavljen, ime, priimek) = get_user()
+    sporocilo = get_sporocilo()
 
     if uporabnik_prijavljen != uporabnik:
     # Ne dovolimo dostopa urejanju podatkov drugim uporabnikom
@@ -466,11 +480,12 @@ def nov_dogodek(uporabnik):
                            ime=ime,
                            priimek=priimek,
                            aktivnosti = cur,
-                           uporabnik_prijavljen=uporabnik_prijavljen)
+                           uporabnik_prijavljen=uporabnik_prijavljen,
+                           sporocilo = sporocilo)
 
 @bottle.post("/uporabnik/<uporabnik>/dodaj_dogodek/")
 def dodaj_dogodek(uporabnik):
-
+    
     #Uporabnik, ki je prijavljen
     (uporabnik_prijavljen, ime, priimek) = get_user()
 
@@ -490,27 +505,27 @@ def dodaj_dogodek(uporabnik):
         cas = cas + ':00'
     else:
         set_sporocilo("alert-danger", "Čas je obvezen argument")
-        return bottle.redirect("/")
+        return bottle.redirect("/uporabnik/{}/dodaj_dogodek/".format(uporabnik))
     
     #DATUM
     if not datum:
         set_sporocilo("alert-danger", "Datum je obvezen argument")
-        return bottle.redirect("/")
+        return bottle.redirect("/uporabnik/{}/dodaj_dogodek/".format(uporabnik))
     today = date.today()
     today = today.strftime("%Y-%m-%d")
     time = datetime.now().time()
     time = time.strftime('%H:%M:%S')
     if today > datum:
         set_sporocilo("alert-danger", "Datum ne ustreza. Časovni stroj še ne obstaja")
-        return bottle.redirect("/")
+        return bottle.redirect("/uporabnik/{}/dodaj_dogodek/".format(uporabnik))
     elif today == datum and cas < time:
         set_sporocilo("alert-danger", "Datum ne ustreza. Časovni stroj še ne obstaja")
-        return bottle.redirect("/")
+        return bottle.redirect("/uporabnik/{}/dodaj_dogodek/".format(uporabnik))
 
     #AKTIVNOST - Zamenjemo aktivnost_ime z aktivnost_id
     if not aktivnost:
         set_sporocilo("alert-danger", "Aktivnost je obvezen argument")
-        return bottle.redirect("/")
+        return bottle.redirect("/uporabnik/{}/dodaj_dogodek/".format(uporabnik))
     else:
         cur.execute("SELECT aktivnost.id FROM aktivnost WHERE aktivnost.ime = %s",
                             [aktivnost])          
@@ -555,7 +570,7 @@ def dodaj_dogodek(uporabnik):
             #Poste ne moremo dodati ((stevilka,drzava) je UNIQUE)
             if cur.fetchone():
                 set_sporocilo("alert-danger", "Ta pošta ne obstaja")
-                return bottle.redirect("/")
+                return bottle.redirect("/uporabnik/{}/dodaj_dogodek/".format(uporabnik))
             #Posto lahko dodamo
             else:
                 cur.execute("INSERT INTO posta (postna_stevilka, kraj, drzava) VALUES (%s, %s, %s) RETURNING id",
@@ -580,7 +595,7 @@ def dodaj_dogodek(uporabnik):
     
 
     set_sporocilo("alert-success", "Uspešno si dodal dogodek")
-    return bottle.redirect("/")
+    return bottle.redirect("/uporabnik/{}/dodaj_dogodek/".format(uporabnik))
 
 @bottle.get("/uporabnik/<uporabnik>/poisci_dogodke/")
 def poisci_dogodek(uporabnik):
@@ -589,6 +604,7 @@ def poisci_dogodek(uporabnik):
     # nima cookija)
 
     (uporabnik_prijavljen, ime, priimek) = get_user()
+    sporocilo = get_sporocilo()
 
     if uporabnik_prijavljen != uporabnik:
     # Ne dovolimo dostopa urejanju podatkov drugim uporabnikom
@@ -601,18 +617,21 @@ def poisci_dogodek(uporabnik):
     tipi = cur.fetchall()
 
     return bottle.template("poisci-dogodke.html",
+                           stran = 'poisci',
                            ime=ime,
                            priimek=priimek,
                            aktivnosti = aktivnosti,
                            tipi = tipi,
                            uporabnik_prijavljen=uporabnik_prijavljen,
                            uporabnik = uporabnik_prijavljen,
-                           dogodki=[])
+                           dogodki=[],
+                           sporocilo=sporocilo)
 
 @bottle.post("/uporabnik/<uporabnik>/poisci_dogodke/")
 def vrni_dogodke(uporabnik):
 
     (uporabnik_prijavljen, ime, priimek) = get_user()
+    sporocilo = get_sporocilo()
 
     aktivnost = bottle.request.forms.aktivnost
     tip = bottle.request.forms.tip
@@ -627,7 +646,7 @@ def vrni_dogodke(uporabnik):
     ime_udelezenec = bottle.request.forms.ime_udelezenec
     priimek_udelezenec = bottle.request.forms.priimek_udelezenec
 
-    dogodki = dobi_dogodke__parametri (aktivnost, tip, datum_od, datum_do, ulica, kraj, organizator,
+    dogodki = dobi_dogodke_parametri (aktivnost, tip, datum_od, datum_do, ulica, kraj, organizator,
                     ime_organizator, priimek_organizator, udelezenec, ime_udelezenec, priimek_udelezenec)
 
     cur.execute("SELECT aktivnost.ime FROM aktivnost ORDER BY aktivnost.ime")
@@ -636,13 +655,93 @@ def vrni_dogodke(uporabnik):
     tipi = cur.fetchall()
 
     return bottle.template("poisci-dogodke.html",
+                           stran = 'poisci',
                            ime=ime,
                            priimek=priimek,
                            aktivnosti = aktivnosti,
                            tipi = tipi,
                            uporabnik_prijavljen=uporabnik_prijavljen,
                            uporabnik=uporabnik_prijavljen,
-                           dogodki = dogodki)
+                           dogodki = dogodki,
+                           sporocilo=sporocilo)
+
+
+@bottle.get("/uporabnik/<uporabnik>/<dogodek>/pridruzi_se/<stran>/")
+def pridruzi_se(uporabnik, dogodek,stran):
+
+    """Preverimo koliko je že udeležencev v dogodku"""
+    cur.execute(""" SELECT COUNT(udelezenec) FROM udelezba WHERE id_dogodek = %s""",[dogodek])
+    (trenutno_st_udelezencev,) = cur.fetchone()
+    """Koliko udeležencev ima lahko dogodek največ"""
+    cur.execute("""SELECT (stevilo_udelezencev) FROM dogodek WHERE id = %s""", [dogodek])
+    (max_st_udelezencev,) = cur.fetchone()
+    st_prostih_mest = max_st_udelezencev - trenutno_st_udelezencev
+
+    """Ali je uporabnik že udeležen v tem dogodku"""
+    cur.execute(""" SELECT (udelezenec, id_dogodek) FROM udelezba
+    WHERE id_dogodek = %s AND udelezenec = %s """, [dogodek, uporabnik])
+    c=cur.fetchall()
+    
+    if c != []:
+        set_sporocilo("alert-danger", "Temu dogodku ste že pridruženi!")
+        if stran == 'glavna':
+            return bottle.redirect("/")
+        else:
+            return bottle.redirect("/uporabnik/{}/poisci_dogodke/".format(uporabnik))
+    if st_prostih_mest <= 0:
+        set_sporocilo("alert-danger", "Vsa mesta so že zasedena!")
+        if stran == 'glavna':
+            return bottle.redirect("/")
+        else:
+            return bottle.redirect("/uporabnik/{}/poisci_dogodke/".format(uporabnik))
+    cur.execute("""
+        INSERT INTO udelezba (udelezenec, id_dogodek) VALUES (%s, %s)
+            """, [uporabnik, dogodek])
+    set_sporocilo("alert-success", "Uspešno ste se pridružili dogodku!")
+    conn.commit()
+
+    if stran == 'glavna':
+        print('Tuki sm k nebi smel bit')
+        return bottle.redirect("/")
+    else:
+        return bottle.redirect("/uporabnik/{}/poisci_dogodke/".format(uporabnik))
+
+
+@bottle.get("/uporabnik/<uporabnik>/<dogodek>/odstrani_dogodek/<stran>/")
+def odstrani_dogodek(uporabnik, dogodek,stran):
+
+    (uporabnik_prijavljen, ime, priimek) = get_user()
+
+    if uporabnik != uporabnik_prijavljen:
+        set_sporocilo("alert-danger", "Ne morete brisati dogodkov, ki jih ne organizirate!")
+
+    """Najprej moramo zbrisati vse udelezence, saj se navezujejo na dogodek"""
+    cur.execute("""DELETE FROM udelezba WHERE udelezba.id_dogodek = %s""",[dogodek])
+
+    """Izbrišemo dogodek"""
+    cur.execute("""DELETE FROM dogodek WHERE dogodek.id = %s""",[dogodek])
+
+    set_sporocilo("alert-success", "Uspešno ste odstranili dogodek!")
+    conn.commit()
+    if stran == 'glavna':
+        return bottle.redirect("/")
+    else:
+        return bottle.redirect("/uporabnik/{}/poisci_dogodke/".format(uporabnik))
+
+@bottle.get("/uporabnik/<uporabnik>/<dogodek>/zapusti_dogodek/<stran>/")
+def zapusti_dogodek(uporabnik, dogodek,stran):
+
+    (uporabnik_prijavljen, ime, priimek) = get_user()
+
+    """Zapustimo dogodek"""
+    cur.execute("""DELETE FROM udelezba WHERE udelezba.udelezenec = %s AND udelezba.id_dogodek = %s""",[uporabnik,dogodek])
+    set_sporocilo("alert-success", "Uspešno ste zapustili dogodek!")
+    conn.commit()
+
+    if stran == 'glavna':
+        return bottle.redirect("/")
+    else:
+        return bottle.redirect("/uporabnik/{}/poisci_dogodke/".format(uporabnik))
 
 
 @bottle.get("/prijava/")

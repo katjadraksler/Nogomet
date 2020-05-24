@@ -1,6 +1,12 @@
 %rebase('osnova.html')
 % include('orodna-vrstica.html')
 
+%if sporocilo:
+  <div class="alert {{sporocilo[0]}} alert-dismissable">{{sporocilo[1]}}
+    <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
+  </div>
+%end
+
     <h5 class="col-md-12 mb-3 pt-4">Določi parametre</h5>
     </div>
     <form class="form-group" method="post" action=".">

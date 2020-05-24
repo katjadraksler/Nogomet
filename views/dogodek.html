@@ -46,9 +46,11 @@
             <div class="a"><a><b>{{datum}}</b></a></div>
             <p><b>{{cas}}</b></p>
           </div>
+
           <div class="col-md-3 list-hour">
-            <a class="gumb1" href="/{{uporabnik_prijavljen}}/{{id}}/pridruzi_se">Pridruži se</a>
+            <a class="gumb1" href="/uporabnik/{{uporabnik_prijavljen}}/{{id}}/pridruzi_se/{{stran}}/">Pridruži se</a> 
           </div>
+
         </div>
       </div>
       <div class="list-row col-12">
@@ -89,7 +91,18 @@
                 %end
               </p>
             </div>
-          </div>    
+          </div> 
+          %if organizator == uporabnik_prijavljen:
+          <div class="col-md-1.5 list-hour">
+            <a class="gumb1" href="/uporabnik/{{uporabnik_prijavljen}}/{{id}}/odstrani_dogodek/{{stran}}/">Izbriši dogodek</a> 
+          </div>
+          %end   
+          %if uporabnik_prijavljen in udelezenci:
+          <div class="col-md-1.5 list-hour">
+            <a class="gumb1" href="/uporabnik/{{uporabnik_prijavljen}}/{{id}}/zapusti_dogodek/{{stran}}/">Zapusti dogodek</a> 
+          </div>
+          %end
+          
       </div>
     </div>
   </div>
