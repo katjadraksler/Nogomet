@@ -46,10 +46,15 @@
             <div class="a"><a><b>{{datum}}</b></a></div>
             <p><b>{{cas}}</b></p>
           </div>
-
+          %if uporabnik_prijavljen in udelezenci:
+          <div class="col-md-1.5 list-hour">
+            <a class="gumb1" href="/uporabnik/{{uporabnik_prijavljen}}/{{id}}/zapusti_dogodek/{{stran}}/">Zapusti dogodek</a> 
+          </div>
+          %else:
           <div class="col-md-3 list-hour">
             <a class="gumb1" href="/uporabnik/{{uporabnik_prijavljen}}/{{id}}/pridruzi_se/{{stran}}/">Pridruži se</a> 
           </div>
+          %end
 
         </div>
       </div>
@@ -69,12 +74,21 @@
             </div>
             <div class="col-md-3 list-title">
               <div style ="color:rgb(128, 115, 115)">Lokacija:</div>
-              <p style ="color:rgb(128, 115, 115)">{{ulica}} {{hisna_stevilka}}
+              <p style ="color:rgb(128, 115, 115)"> 
+                %if ulica != None and hisna_stevilka != None:
+                {{ulica}} {{hisna_stevilka}}
+                %end
+                %if postna_stevilka != None and kraj != None:
                 <br>{{postna_stevilka}} {{kraj}}</p>
+                %end
             </div>
             <div class="col-md-3 list-title">
               <div style ="color:rgb(128, 115, 115)">Število mest:</div>
-              <p style ="color:rgb(128, 115, 115)">{{stevilo_udelezencev}}</p>
+              <p style ="color:rgb(128, 115, 115)">
+                %if stevilo_udelezencev != None: 
+                {{stevilo_udelezencev}}
+                %end
+              </p>
             </div>
           </div>       
           <div class="row">
@@ -97,11 +111,7 @@
             <a class="gumb1" href="/uporabnik/{{uporabnik_prijavljen}}/{{id}}/odstrani_dogodek/{{stran}}/">Izbriši dogodek</a> 
           </div>
           %end   
-          %if uporabnik_prijavljen in udelezenci:
-          <div class="col-md-1.5 list-hour">
-            <a class="gumb1" href="/uporabnik/{{uporabnik_prijavljen}}/{{id}}/zapusti_dogodek/{{stran}}/">Zapusti dogodek</a> 
-          </div>
-          %end
+
           
       </div>
     </div>

@@ -1,60 +1,27 @@
 %rebase('osnova.html', title='AktiNet')
+% include('orodna-vrstica.html')
 
-<style>
-    div.a {text-transform: uppercase;}
-    .span{
-       display:block;
-       color: rgba(0, 0, 0, 0.517);
-       font-size: 0.9rem;
-    }
-</style>
-
-<br>
-<h4 class="p-2 pt-4">Moji dogodki</h4>
-<br>
-
-%for prih in prihodnost:
-<div>
-  <div class="card card-body">
-      <div class="card-deck list row">
-        <div class="list-row col-12">
-          <div class="row">
-            <div class="col-md-1 list-day">
-              <img src="/static/favicon.ico" alt="" width="35" height="35" class="mr-2 rounded">
-            </div>
-            <div class="col-md-4 list-title">
-              <div class="a" ime="aktivnost"><b>{{prih[1]}}</b></div>
-              <p ime="datum"><b>{{prih[6]}}</b></p>
-            </div>
-            <div class="col-md-4 list-title">
-              <div ime ="ime_in_priimek">{{prih[4]}} {{prih[5]}}<a ime="uporabnik" class="span" href="/uporabnik/katjadraksler/">@{{prih[3]}}</a></div>
-            </div>
-            <div class="col-md-3 list-hour">
-              <div ime ="posta">{{prih[11]}} {{prih[10]}}</div>
-              <p ime = naslov>{{prih[9]}} {{prih[8]}}</p>
-            </div>
-          </div>
-          <hr>
-          <div class="row">
-            <div class="col-md-1 list-day"></div>
-    
-            <div class="col-md-4 list-day">
-                <details><summary><a>Opis</a>
-                </summary><p color = "gray">{{prih[12]}}</p></details>
-              </div>
-          
-            <div class="col-md-4 list-day">
-                <a>Število udelezencev: {{prih[13]}}</a>
-              </div>
-            <div class="col-md-3 list-day">
-              <details><summary><a>Udeleženci</a>
-              </summary><p class = "span">seznam udelezencev</p></details>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+%if sporocilo:
+  <div class="alert {{sporocilo[0]}} alert-dismissable">{{sporocilo[1]}}
+    <button type="button" class="close" data-dismiss="alert" aria-hidden="true">&times;</button>
   </div>
-</div>
+%end
+
+<br>
+<h4 class="p-2 pt-4">Dogodki, ki jih organiziraš:</h4>
+<br>
+
+%for (id, aktivnost_id, ime_aktivnosti, tip, organizator, ime_organizator, priimek_organizator, stevilo_udelezencev, datum,cas, hisna_stevilka, ulica, postna_stevilka, kraj, opis, udelezenci) in dogodki_jih_organizira:
+%include('dogodek.html')
 <br>
 %end
+
+<br>
+<h4 class="p-2 pt-4">Dogodki, ki se jih boš udeležil:</h4>
+<br>
+
+%for (id, aktivnost_id, ime_aktivnosti, tip, organizator, ime_organizator, priimek_organizator, stevilo_udelezencev, datum,cas, hisna_stevilka, ulica, postna_stevilka, kraj, opis, udelezenci) in dogodki_se_udelezi:
+%include('dogodek.html')
+<br>
+%end
+
