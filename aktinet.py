@@ -5,11 +5,11 @@
 import bottle
 import hashlib # računanje MD5 kriptografski hash za gesla
 from datetime import datetime, date
-import inflect
+# import inflect
 
 
 # uvozimo ustrezne podatke za povezavo
-import auth_katja as auth
+import auth as auth
 
 # uvozimo psycopg2
 import psycopg2, psycopg2.extensions, psycopg2.extras
