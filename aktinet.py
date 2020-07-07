@@ -1300,6 +1300,16 @@ def komentiraj_na_zidu(uporabnik,oid):
         cur.execute("INSERT INTO komentar(avtor,id_objava,vsebina) VALUES (%s, %s, %s)", [uporabnik_prijavljen, oid, komentar])
         conn.commit()
     return bottle.redirect("/uporabnik/{}/#objava-{}".format(uporabnik, oid))
+
+@bottle.post("/komentiraj/<oid>/")
+def komentiraj(oid):
+    """ Komentiraj objavo na glavni strani prijavljenega uporabnika """
+    (uporabnik_prijavljen, ime_prijavljen, priimek_prijavljen) = get_user()
+    komentar = bottle.request.forms.komentar
+    if komentar:
+        cur.execute("INSERT INTO komentar(avtor,id_objava,vsebina) VALUES (%s, %s, %s)", [uporabnik_prijavljen, oid, komentar])
+        conn.commit()
+    return bottle.redirect("/#trac-{}".format(oid))
     
 @bottle.get("/uporabnik/<uporabnik>/komentar/<oid>/<kid>/brisi/")
 def brisi_komentar_na_zidu(uporabnik, oid, kid):

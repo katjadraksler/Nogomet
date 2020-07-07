@@ -21,29 +21,26 @@
         </div>
         <div class="panel-footer">
           <div class="panel-body">
-            %for (username, ime, priimek, vsebina, komentar_cas) in komentarji:
+            
+            %for (username, ime_komentator, priimek_komentator, vsebina, komentar_cas) in reversed(komentarji):
               <div class="card card-body m-3 small">
                 <div class="d-flex align-items-center m-1">
                   <img class="mr-3" src="/static/ikona.svg" alt="" width="40" height="40">
                   <div class="pl-2 media-body">
-                  <strong class="text-gray-dark">{{ime}} {{priimek}}</strong>
-                  <div><a class="trac-uporabnik" href="/uporabnik/{{username}}/">@{{username}}</a></div>
+                  <strong class="text-gray-dark">{{ime_komentator}} {{priimek_komentator}}</strong>
+                  <div><a class="trac-uporabnik" href="/uporabnik/{{avtor}}/">@{{username}}</a></div>
                   </div>
                   <i class="trac-cas mb-3 small">{{komentar_cas}}</i>
                 </div>
                 <div class="pt-3">{{vsebina}}</div>
                 <div class="track-kontrole">
-                %if avtor == uporabnik_prijavljen:
-                <div class="text-right">
-                <a href="/trac/{{tid}}/delete/" class="pb-3">zbriši</a></div>
-                %end
                 </div>
               </div>
             %end
           </div>
         </div>
         <div class="panel-footer text-right mx-3">
-          <form method="get" action="/komentar/{{tid}}/">
+          <form method="post" action="/komentiraj/{{tid}}/">
             <textarea class="form-control input-lg p-text-area" name="komentar" placeholder="Komentiraj objavo."></textarea>
             <input class="btn btn-primary" id="komentar-button" type="submit" value="Komentiraj"/>
           </form>
