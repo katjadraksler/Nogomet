@@ -1,7 +1,7 @@
 # Socialno omrezje - aktivnosti
 Projekt pri predmetu Osnove podatkovnih baz 2019/2020.
 
-[![bottle.py](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/katjadraksler/Socialno-omrezje-aktivnosti/master?urlpath=proxy/8080/) 
+[![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/katjadraksler/Socialno-omrezje-aktivnosti/master)
 
 Opis
 ---- 
