@@ -1,7 +1,13 @@
 <nav class="navbar mt-3 navbar-expand-md shadow bg-light navbar-light">
   <ul class="navbar-nav">
     <li class="nav-item">
-      <a class="nav-link" href="/uporabnik/{{uporabnik}}/">Moje objave</a>
+      <a class="nav-link" href="/uporabnik/{{uporabnik}}/">
+        %if uporabnik_prijavljen==uporabnik:
+        Moje objave
+        %else:
+        Objave
+        %end
+      </a>
     </li>
     <li class="nav-item">
       <a class="nav-link" href="/uporabnik/{{uporabnik}}/sledilci/">Sledilci</a>
@@ -10,7 +16,13 @@
       <a class="nav-link" href="/uporabnik/{{uporabnik}}/zasledovani/">Zasledovani</a>
     </li>
     <li class="nav-item">
-      <a class="nav-link" href="/uporabnik/{{uporabnik}}/aktivnosti/">Moje aktivnosti</a>
+      <a class="nav-link" href="/uporabnik/{{uporabnik}}/aktivnosti/">
+        %if uporabnik_prijavljen==uporabnik:
+        Moje aktivnosti
+        %else:
+        Aktivnosti
+        %end
+      </a>
     </li>
     %if uporabnik_prijavljen==uporabnik:
     <li class="nav-item">
