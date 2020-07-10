@@ -1,7 +1,7 @@
 <nav class="navbar mt-3 navbar-expand-md shadow bg-light navbar-light">
   <ul class="navbar-nav">
     <li class="nav-item">
-      <a class="nav-link" href="/uporabnik/{{uporabnik}}/">
+      <a class="nav-link" href="{{ROOT}}uporabnik/{{uporabnik}}/">
         %if uporabnik_prijavljen==uporabnik:
         Moje objave
         %else:
@@ -10,13 +10,13 @@
       </a>
     </li>
     <li class="nav-item">
-      <a class="nav-link" href="/uporabnik/{{uporabnik}}/sledilci/">Sledilci</a>
+      <a class="nav-link" href="{{ROOT}}uporabnik/{{uporabnik}}/sledilci/">Sledilci</a>
     </li>
     <li class="nav-item">
-      <a class="nav-link" href="/uporabnik/{{uporabnik}}/zasledovani/">Zasledovani</a>
+      <a class="nav-link" href="{{ROOT}}uporabnik/{{uporabnik}}/zasledovani/">Zasledovani</a>
     </li>
     <li class="nav-item">
-      <a class="nav-link" href="/uporabnik/{{uporabnik}}/aktivnosti/">
+      <a class="nav-link" href="{{ROOT}}uporabnik/{{uporabnik}}/aktivnosti/">
         %if uporabnik_prijavljen==uporabnik:
         Moje aktivnosti
         %else:
@@ -26,13 +26,13 @@
     </li>
     %if uporabnik_prijavljen==uporabnik:
     <li class="nav-item">
-      <a class="nav-link" href="/uporabnik/{{uporabnik}}/sporocila/">Sporočila</a>
+      <a class="nav-link" href="{{ROOT}}uporabnik/{{uporabnik}}/sporocila/">Sporočila</a>
     </li>
     <li class="nav-item">
-      <a class="nav-link" href="/uporabnik/{{uporabnik_prijavljen}}/moji_dogodki/">Moji dogodki</a>
+      <a class="nav-link" href="{{ROOT}}uporabnik/{{uporabnik_prijavljen}}/moji_dogodki/">Moji dogodki</a>
     </li>
     <li class="nav-item">
-      <a class="nav-link" href="/uporabnik/{{uporabnik}}/uredi_profil/">Uredi profil</a>
+      <a class="nav-link" href="{{ROOT}}uporabnik/{{uporabnik}}/uredi_profil/">Uredi profil</a>
     </li>
     %end
   </ul>

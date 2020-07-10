@@ -36,7 +36,7 @@
       <div class="list-row col-12">
         <div class="row">
           <div class="col-md-1 list-day">
-            <div id="flip"><img src="/static/favicon.ico" alt="" width="35" height="35" class="mr-2 rounded"></div>
+            <div id="flip"><img src="{{ROOT}}static/favicon.ico" alt="" width="35" height="35" class="mr-2 rounded"></div>
           </div>
           <div class="col-md-5 list-title">
             <div class="a"><b>{{ime_aktivnosti}}</b></div>
@@ -48,11 +48,11 @@
           </div>
           %if uporabnik_prijavljen in udelezenci:
           <div class="col-md-1.5 list-hour">
-            <a class="gumb1" href="/uporabnik/{{uporabnik_prijavljen}}/{{id}}/zapusti_dogodek/{{stran}}/">Zapusti dogodek</a> 
+            <a class="gumb1" href="{{ROOT}}uporabnik/{{uporabnik_prijavljen}}/{{id}}/zapusti_dogodek/{{stran}}/">Zapusti dogodek</a> 
           </div>
           %else:
           <div class="col-md-3 list-hour">
-            <a class="gumb1" href="/uporabnik/{{uporabnik_prijavljen}}/{{id}}/pridruzi_se/{{stran}}/">Pridruži se</a> 
+            <a class="gumb1" href="{{ROOT}}uporabnik/{{uporabnik_prijavljen}}/{{id}}/pridruzi_se/{{stran}}/">Pridruži se</a> 
           </div>
           %end
 
@@ -70,7 +70,7 @@
             <div class="col-md-5 list-title">
               <div style ="color:rgb(128, 115, 115)">Organizator:</div>
               <p style ="color:rgb(128, 115, 115)">{{ime_organizator}} {{priimek_organizator}}
-              <br><a class="trac-uporabnik" href="/uporabnik/{{organizator}}/">@{{organizator}}</a></p>
+              <br><a class="trac-uporabnik" href="{{ROOT}}uporabnik/{{organizator}}/">@{{organizator}}</a></p>
             </div>
             <div class="col-md-3 list-title">
               <div style ="color:rgb(128, 115, 115)">Lokacija:</div>
@@ -101,14 +101,14 @@
               <p style ="color:rgb(128, 115, 115)"></p>
                 <div style ="color:rgb(128, 115, 115)">Udelezenci:</div>
                 %for udelezenec in udelezenci:
-                <a class="trac-uporabnik" href="/uporabnik/{{udelezenec}}/">@{{udelezenec}}</a><br>
+                <a class="trac-uporabnik" href="{{ROOT}}uporabnik/{{udelezenec}}/">@{{udelezenec}}</a><br>
                 %end
               </p>
             </div>
           </div> 
           %if organizator == uporabnik_prijavljen:
           <div class="col-md-1.5 list-hour">
-            <a class="gumb1" href="/uporabnik/{{uporabnik_prijavljen}}/{{id}}/odstrani_dogodek/{{stran}}/">Izbriši dogodek</a> 
+            <a class="gumb1" href="{{ROOT}}uporabnik/{{uporabnik_prijavljen}}/{{id}}/odstrani_dogodek/{{stran}}/">Izbriši dogodek</a> 
           </div>
           %end   
 

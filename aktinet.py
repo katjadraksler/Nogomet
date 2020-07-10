@@ -5,8 +5,6 @@
 import bottle
 import hashlib # računanje MD5 kriptografski hash za gesla
 from datetime import datetime, date
-# import inflect
-
 
 # uvozimo ustrezne podatke za povezavo
 import auth_public as auth
@@ -31,9 +29,6 @@ DB_PORT = os.environ.get('POSTGRES_PORT', 5432)
 # lepa sporočila o napakah.
 bottle.debug(True)
 
-# Datoteka, v kateri je baza
-baza_datoteka = "fakebook.sqlite"
-
 # Mapa s statičnimi datotekami
 static_dir = "./static"
 
@@ -42,6 +37,12 @@ secret = "to skrivnost je zelo tezko uganiti 1094107c907cw982982c42"
 
 ######################################################################
 # Pomožne funkcije
+
+def rtemplate(*largs, **kwargs):
+    """
+    Izpis predloge s podajanjem spremenljivke ROOT z osnovnim URL-jem.
+    """
+    return bottle.template(ROOT=ROOT, *largs, **kwargs)
 
 def password_md5(s):
     """Vrni MD5 hash danega UTF-8 niza. Gesla vedno spravimo v bazo
@@ -507,7 +508,7 @@ def main():
     #Dogodki, ki bi glede na zanimanje zanimali uporabnika
     dogodki = dobi_dogodke(uporabnik = str(uporabnik_prijavljen))
 
-    return bottle.template("glavna.html",
+    return rtemplate("glavna.html",
                             stran = 'glavna',
                             traci=ts,
                             dogodki = dogodki,
@@ -533,7 +534,7 @@ def nov_dogodek(uporabnik):
     
     cur.execute("SELECT aktivnost.ime FROM aktivnost ORDER BY aktivnost.ime")
 
-    return bottle.template("dodaj_dogodek.html",
+    return rtemplate("dodaj_dogodek.html",
                            ime=ime,
                            priimek=priimek,
                            aktivnosti = cur,
@@ -676,7 +677,7 @@ def poisci_dogodek(uporabnik):
     cur.execute("SELECT tip_aktivnosti.tip FROM tip_aktivnosti ORDER BY tip_aktivnosti.tip")
     tipi = cur.fetchall()
 
-    return bottle.template("poisci-dogodke.html",
+    return rtemplate("poisci-dogodke.html",
                            stran = 'poisci',
                            ime=ime,
                            priimek=priimek,
@@ -714,7 +715,7 @@ def vrni_dogodke(uporabnik):
     cur.execute("SELECT tip_aktivnosti.tip FROM tip_aktivnosti ORDER BY tip_aktivnosti.tip")
     tipi = cur.fetchall()
 
-    return bottle.template("poisci-dogodke.html",
+    return rtemplate("poisci-dogodke.html",
                            stran = 'poisci',
                            ime=ime,
                            priimek=priimek,
@@ -821,7 +822,7 @@ def zapusti_dogodek(uporabnik, dogodek,stran):
 @bottle.get("/prijava/")
 def login_get():
     """Serviraj formo za prijavo."""
-    return bottle.template("prijava.html",
+    return rtemplate("prijava.html",
                            napaka=None,
                            uporabnik=None)
 
@@ -842,7 +843,7 @@ def login_post():
 
     if cur.fetchone() is None:
         # Uporabnisko ime in geslo se ne ujemata
-        return bottle.template("prijava.html",
+        return rtemplate("prijava.html",
                                napaka="Nepravilna prijava",
                                uporabnik=uporabnik)
     else:
@@ -859,7 +860,7 @@ def logout():
 @bottle.get("/registracija/")
 def login_get():
     """Prikaži formo za registracijo."""
-    return bottle.template("registracija.html", 
+    return rtemplate("registracija.html", 
                            uporabnik=None,
                            ime=None,
                            priimek=None,
@@ -877,14 +878,14 @@ def register_post():
     cur.execute("SELECT 1 FROM uporabnik WHERE uporabnisko_ime=%s", [uporabnik])
     if cur.fetchone():
         # Uporabnik že obstaja
-        return bottle.template("registracija.html",
+        return rtemplate("registracija.html",
                                uporabnik=uporabnik,
                                ime=ime,
                                priimek=priimek,
                                napaka='To uporabniško ime je že zavzeto')
     elif not geslo1 == geslo2:
         # Geslo se ne ujemata
-        return bottle.template("registracija.html",
+        return rtemplate("registracija.html",
                                uporabnik=uporabnik,
                                ime=ime,
                                priimek=priimek,
@@ -920,7 +921,7 @@ def uporabnik_profil(uporabnik):
     # Pogledamo, če imamo kakšna sporočila za uporabnika
     sporocilo = get_sporocilo()
     # Prikažemo predlog
-    return bottle.template("profil.html",
+    return rtemplate("profil.html",
                            profil_ime=ime,
                            profil_priimek=priimek,
                            ime=ime_prijavljen,
@@ -950,7 +951,7 @@ def uredi_profil(uporabnik, sporocila=[]):
     """, [uporabnik])
     (ime, priimek, spol, datum_rojstva, ulica, hisna_stevilka, kraj, drzava, postna_stevilka) = cur.fetchone()
     # Prikažemo predlogo
-    return bottle.template("uredi-profil.html",
+    return rtemplate("uredi-profil.html",
                            uporabnik=uporabnik,
                            ime=ime_prijavljen,
                            priimek=priimek_prijavljen,
@@ -1080,7 +1081,7 @@ def sprememba(uporabnik):
                 
     # Prikažemo stran z uporabnikom, z danimi sporočili. Kot vidimo,
     # lahko kar pokličemo funkcijo, ki servira tako stran
-    return bottle.template("uredi-profil.html",
+    return rtemplate("uredi-profil.html",
                            uporabnik=uporabnik,
                            ime=ime,
                            priimek=priimek,
@@ -1114,7 +1115,7 @@ def pokazi_sledilce(uporabnik):
     # Koliko sledilcev ima ta uporabnik?
     st_s = len(sledilci)
     (ime,priimek) = dobi_ime(uporabnik)
-    return bottle.template("sledilci.html",
+    return rtemplate("sledilci.html",
                            uporabnik=uporabnik,
                            ime=ime_prijavljen,
                            priimek=priimek_prijavljen,
@@ -1140,7 +1141,7 @@ def pokazi_zasledovane(uporabnik):
     cur.execute("SELECT COUNT(*) FROM sledilec WHERE sledilec=%s", [uporabnik])
     (st_z,) = cur.fetchone()
     (ime,priimek) = dobi_ime(uporabnik)
-    return bottle.template("zasledovani.html",
+    return rtemplate("zasledovani.html",
                            uporabnik=uporabnik,
                            ime=ime_prijavljen,
                            priimek=priimek_prijavljen,
@@ -1173,7 +1174,7 @@ def isci_uporabnike():
     for (up, i, p) in vsi_uporabniki:
         if iskanje.lower() in i.lower() + ' ' + p.lower() or iskanje.lower() in up.lower():
             zadetki.append((up,i,p))
-    return bottle.template("isci.html",
+    return rtemplate("isci.html",
                            iskanje=iskanje,
                            ime=ime_prijavljen,
                            priimek=priimek_prijavljen,
@@ -1233,7 +1234,7 @@ def sporocila_uporabnika(uporabnik, sogovornik):
             b = pogovori.get(prejemnik, [])
             b.append((0,vsebina,pretty_date(cas)))
             pogovori[prejemnik] = b
-    return bottle.template("sporocila.html",
+    return rtemplate("sporocila.html",
                            profil_ime=ime_prijavljen,
                            profil_priimek=priimek_prijavljen,
                            ime=ime_prijavljen,
@@ -1346,7 +1347,7 @@ def moji_dogodki(uporabnik):
     dogodki_jih_organizira = dogodki_organizira(uporabnik = str(uporabnik_prijavljen))
     dogodki_se_udelezi = dogodki_udelezi(uporabnik = str(uporabnik_prijavljen))
     
-    return bottle.template("moji_dogodki.html",
+    return rtemplate("moji_dogodki.html",
                             dogodki_jih_organizira=dogodki_jih_organizira,
                             dogodki_se_udelezi=dogodki_se_udelezi,
                             ime=ime_prijavljen,
@@ -1376,7 +1377,7 @@ def pokazi_aktivnost(uporabnik):
         cur.execute("""SELECT ime FROM aktivnost ORDER BY ime""")
         for a in cur:
             vse_aktivnosti.append(a[0])
-    return bottle.template("aktivnosti.html",
+    return rtemplate("aktivnosti.html",
                            uporabnik_prijavljen=uporabnik_prijavljen,
                            ime=ime_prijavljen,
                            aktivnosti=aktivnosti_uporabnika,

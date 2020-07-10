@@ -6,15 +6,15 @@
     <meta name="viewport" content="width=device-width, initial-scale=1">
     <meta name="description" content="">
     <meta name="author" content="">
-    <link rel="shortcut icon" href="/static/favicon.ico">
+    <link rel="shortcut icon" href="{{ROOT}}static/favicon.ico">
 
     <title>AktiNet registracija</title>
 
     <!-- Bootstrap core CSS -->
-    <link href="/static/css/bootstrap.min.css" rel="stylesheet">
+    <link href="{{ROOT}}static/css/bootstrap.min.css" rel="stylesheet">
 
     <!-- Custom styles for this template -->
-    <link href="/static/prijava.css" rel="stylesheet">
+    <link href="{{ROOT}}static/prijava.css" rel="stylesheet">
 
   </head>
 
@@ -22,7 +22,7 @@
 
     <div class="container">
       <form class="form-signin" role="form" method="post" action=".">
-        <img class="mb-1" src="/static/favicon.png" alt="" width="100" height="100">
+        <img class="mb-1" src="{{ROOT}}static/favicon.png" alt="" width="100" height="100">
         <h2 class="form-signin-heading">Registracija</h2>
         %if napaka:
         <div class="alert alert-warning">{{napaka}}</div>
@@ -50,7 +50,7 @@
         <input type="password" class="form-control" placeholder="Potrdi geslo" name="geslo2" required>
         <button class="btn btn-lg btn-primary btn-block" type="submit">Registriraj se</button>
         <div>
-            <a href="/prijava/">Prijava</a>
+            <a href="{{ROOT}}prijava/">Prijava</a>
         </div>
       </form>
     </div>

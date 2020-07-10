@@ -9,7 +9,7 @@
 %end
 
 <div class="container pt-3">
-<form action="/uporabnik/{{uporabnik_prijavljen}}/sporocila/{{odprt_pogovor}}/isci/" method="post" class="bg-light col-5 align-self-start">
+<form action="{{ROOT}}uporabnik/{{uporabnik_prijavljen}}/sporocila/{{odprt_pogovor}}/isci/" method="post" class="bg-light col-5 align-self-start">
   <div class="input-group">
     <input type="text" placeholder="Išči uporabnika" name="isci_uporabnika" id="isci_uporabnika" class="shadow border form-control rounded-4 border-0 py-4 bg-light">
     <div class="input-group-append">
@@ -34,9 +34,9 @@
               %if odprt_pogovor == oseba:
               <a class="list-group-item list-group-item-action active text-white rounded-0">
               %else:
-              <a href="/uporabnik/{{uporabnik}}/sporocila/{{oseba}}/#text-polje" class="list-group-item list-group-item-action list-group-item-light rounded-0">
+              <a href="{{ROOT}}uporabnik/{{uporabnik}}/sporocila/{{oseba}}/#text-polje" class="list-group-item list-group-item-action list-group-item-light rounded-0">
               %end
-                <div class="media"><img src="/static/ikona.svg" alt="user" width="50" class="rounded-circle">
+                <div class="media"><img src="{{ROOT}}static/ikona.svg" alt="user" width="50" class="rounded-circle">
                   <div class="media-body ml-4">
                     <div class="d-flex align-items-center justify-content-between mb-1">
                       <h6 class="mb-0">{{oseba}}</h6><small class="small font-weight-bold">
@@ -67,7 +67,7 @@
           %for (p,vsebina,cas) in pogovori.get(odprt_pogovor,[])[::-1]:
           <!-- Sender Message-->
           %if p:
-          <div class="media w-50 mb-3"><img src="/static/ikona.svg" alt="user" width="50" class="rounded-circle">
+          <div class="media w-50 mb-3"><img src="{{ROOT}}static/ikona.svg" alt="user" width="50" class="rounded-circle">
             <div class="media-body ml-3">
               <div class="bg-light rounded py-2 px-3 mb-2">
                 <p class="text-small mb-0 text-muted">{{vsebina}}</p>
@@ -87,7 +87,7 @@
   
         <!-- Typing area -->
         <a name="text-polje">
-        <form action="/uporabnik/{{uporabnik_prijavljen}}/sporocila/{{odprt_pogovor}}/" method="post" class="bg-light">
+        <form action="{{ROOT}}uporabnik/{{uporabnik_prijavljen}}/sporocila/{{odprt_pogovor}}/" method="post" class="bg-light">
           <div class="input-group">
             <input type="text" placeholder="Napiši sporočilo" name="novo_sporocilo" id="novo_sporocilo" class="form-control rounded-0 border-0 py-4 bg-light">
             <div class="input-group-append">
