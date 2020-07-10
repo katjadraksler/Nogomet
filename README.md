@@ -18,10 +18,5 @@ Uporabniško ime: rlandells1
 
 Geslo: 123
 
-Opomba
-------
-Za dostop je potrebno imeti naložen Bottle.
-
-
 ![ER diagram](https://github.com/katjadraksler/Socialno-omrezje-aktivnosti/blob/master/ERdiagram.png)
 
