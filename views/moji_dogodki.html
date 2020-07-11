@@ -7,18 +7,31 @@
   </div>
 %end
 
+%if uporabnik == uporabnik_prijavljen:
 <br>
 <h4 class="p-2 pt-4">Dogodki, ki jih organiziraš:</h4>
 <br>
+%else:
+<br>
+<h4 class="p-2 pt-4">Dogodki, ki jih organizira:</h4>
+<br>
+%end
+
 
 %for (id, aktivnost_id, ime_aktivnosti, tip, organizator, ime_organizator, priimek_organizator, stevilo_udelezencev, datum,cas, hisna_stevilka, ulica, postna_stevilka, kraj, opis, udelezenci) in dogodki_jih_organizira:
 %include('dogodek.html')
 <br>
 %end
 
+%if uporabnik == uporabnik_prijavljen:
 <br>
 <h4 class="p-2 pt-4">Dogodki, ki se jih boš udeležil:</h4>
 <br>
+%else:
+<br>
+<h4 class="p-2 pt-4">Dogodki, ki se jih bo udeležil:</h4>
+<br>
+%end
 
 %for (id, aktivnost_id, ime_aktivnosti, tip, organizator, ime_organizator, priimek_organizator, stevilo_udelezencev, datum,cas, hisna_stevilka, ulica, postna_stevilka, kraj, opis, udelezenci) in dogodki_se_udelezi:
 %include('dogodek.html')
