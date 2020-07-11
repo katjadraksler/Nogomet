@@ -5,8 +5,6 @@
 import bottle
 import hashlib # računanje MD5 kriptografski hash za gesla
 from datetime import datetime, date
-# import inflect
-
 
 # uvozimo ustrezne podatke za povezavo
 import auth_public as auth
@@ -29,10 +27,8 @@ DB_PORT = os.environ.get('POSTGRES_PORT', 5432)
 
 # Vklopi debug, da se bodo predloge same osvežile in da bomo dobivali
 # lepa sporočila o napakah.
-bottle.debug(True)
 
-# Datoteka, v kateri je baza
-baza_datoteka = "fakebook.sqlite"
+# bottle.debug(True)
 
 # Mapa s statičnimi datotekami
 static_dir = "./static"
@@ -42,6 +38,12 @@ secret = "to skrivnost je zelo tezko uganiti 1094107c907cw982982c42"
 
 ######################################################################
 # Pomožne funkcije
+
+def rtemplate(*largs, **kwargs):
+    """
+    Izpis predloge s podajanjem spremenljivke ROOT z osnovnim URL-jem.
+    """
+    return bottle.template(ROOT=ROOT, *largs, **kwargs)
 
 def password_md5(s):
     """Vrni MD5 hash danega UTF-8 niza. Gesla vedno spravimo v bazo
@@ -122,7 +124,7 @@ def get_user(auto_login = True):
             return r
     # Če pridemo do sem, uporabnik ni prijavljen, naredimo redirect
     if auto_login:
-        bottle.redirect('/prijava/')
+        bottle.redirect(ROOT + 'prijava/')
     else:
         return None
 
@@ -516,7 +518,7 @@ def main():
     #Dogodki, ki bi glede na zanimanje zanimali uporabnika
     dogodki = dobi_dogodke(uporabnik = str(uporabnik_prijavljen))
 
-    return bottle.template("glavna.html",
+    return rtemplate("glavna.html",
                             stran = 'glavna',
                             traci=ts,
                             dogodki = dogodki,
@@ -538,11 +540,11 @@ def nov_dogodek(uporabnik):
     if uporabnik_prijavljen != uporabnik:
     # Ne dovolimo dostopa urejanju podatkov drugim uporabnikom
         set_sporocilo("alert-danger", "Nedovoljena objava dogodka z drugim uporabniskim imenom!")
-        return bottle.redirect("/")
+        return bottle.redirect(ROOT)
     
     cur.execute("SELECT aktivnost.ime FROM aktivnost ORDER BY aktivnost.ime")
 
-    return bottle.template("dodaj_dogodek.html",
+    return rtemplate("dodaj_dogodek.html",
                            ime=ime,
                            priimek=priimek,
                            aktivnosti = cur,
@@ -572,27 +574,27 @@ def dodaj_dogodek(uporabnik):
         cas = cas + ':00'
     else:
         set_sporocilo("alert-danger", "Čas je obvezen argument")
-        return bottle.redirect("/uporabnik/{}/dodaj_dogodek/".format(uporabnik))
+        return bottle.redirect(ROOT + "uporabnik/{}/dodaj_dogodek/".format(uporabnik))
     
     #DATUM
     if not datum:
         set_sporocilo("alert-danger", "Datum je obvezen argument")
-        return bottle.redirect("/uporabnik/{}/dodaj_dogodek/".format(uporabnik))
+        return bottle.redirect(ROOT + "uporabnik/{}/dodaj_dogodek/".format(uporabnik))
     today = date.today()
     today = today.strftime("%Y-%m-%d")
     time = datetime.now().time()
     time = time.strftime('%H:%M:%S')
     if today > datum:
         set_sporocilo("alert-danger", "Datum ne ustreza.")
-        return bottle.redirect("/uporabnik/{}/dodaj_dogodek/".format(uporabnik))
+        return bottle.redirect(ROOT + "uporabnik/{}/dodaj_dogodek/".format(uporabnik))
     elif today == datum and cas < time:
         set_sporocilo("alert-danger", "Datum ne ustreza.")
-        return bottle.redirect("/uporabnik/{}/dodaj_dogodek/".format(uporabnik))
+        return bottle.redirect(ROOT + "uporabnik/{}/dodaj_dogodek/".format(uporabnik))
 
     #AKTIVNOST - Zamenjemo aktivnost_ime z aktivnost_id
     if not aktivnost:
         set_sporocilo("alert-danger", "Aktivnost je obvezen argument")
-        return bottle.redirect("/uporabnik/{}/dodaj_dogodek/".format(uporabnik))
+        return bottle.redirect(ROOT + "uporabnik/{}/dodaj_dogodek/".format(uporabnik))
     else:
         cur.execute("SELECT aktivnost.id FROM aktivnost WHERE aktivnost.ime = %s",
                             [aktivnost])          
@@ -637,7 +639,7 @@ def dodaj_dogodek(uporabnik):
             #Poste ne moremo dodati ((stevilka,drzava) je UNIQUE)
             if cur.fetchone():
                 set_sporocilo("alert-danger", "Ta pošta ne obstaja")
-                return bottle.redirect("/uporabnik/{}/dodaj_dogodek/".format(uporabnik))
+                return bottle.redirect(ROOT + "uporabnik/{}/dodaj_dogodek/".format(uporabnik))
             #Posto lahko dodamo
             else:
                 cur.execute("INSERT INTO posta (postna_stevilka, kraj, drzava) VALUES (%s, %s, %s) RETURNING id",
@@ -664,7 +666,7 @@ def dodaj_dogodek(uporabnik):
     conn.commit()
     
     set_sporocilo("alert-success", "Uspešno si dodal dogodek")
-    return bottle.redirect("/uporabnik/{}/dodaj_dogodek/".format(uporabnik))
+    return bottle.redirect(ROOT + "uporabnik/{}/dodaj_dogodek/".format(uporabnik))
 
 @bottle.get("/uporabnik/<uporabnik>/poisci_dogodke/")
 def poisci_dogodek(uporabnik):
@@ -678,14 +680,14 @@ def poisci_dogodek(uporabnik):
     if uporabnik_prijavljen != uporabnik:
     # Ne dovolimo dostopa urejanju podatkov drugim uporabnikom
         set_sporocilo("alert-danger", "Nedovoljena objava dogodka z drugim uporabniskim imenom!")
-        return bottle.redirect("/")
+        return bottle.redirect(ROOT)
     
     cur.execute("SELECT aktivnost.ime FROM aktivnost ORDER BY aktivnost.ime")
     aktivnosti = cur.fetchall()
     cur.execute("SELECT tip_aktivnosti.tip FROM tip_aktivnosti ORDER BY tip_aktivnosti.tip")
     tipi = cur.fetchall()
 
-    return bottle.template("poisci-dogodke.html",
+    return rtemplate("poisci-dogodke.html",
                            stran = 'poisci',
                            ime=ime,
                            priimek=priimek,
@@ -723,7 +725,7 @@ def vrni_dogodke(uporabnik):
     cur.execute("SELECT tip_aktivnosti.tip FROM tip_aktivnosti ORDER BY tip_aktivnosti.tip")
     tipi = cur.fetchall()
 
-    return bottle.template("poisci-dogodke.html",
+    return rtemplate("poisci-dogodke.html",
                            stran = 'poisci',
                            ime=ime,
                            priimek=priimek,
@@ -759,20 +761,20 @@ def pridruzi_se(uporabnik, dogodek, stran):
     if c != []:
         set_sporocilo("alert-danger", "Temu dogodku ste že pridruženi!")
         if stran == 'glavna':
-            return bottle.redirect("/")
+            return bottle.redirect(ROOT)
         elif stran == 'poisci':
-            return bottle.redirect("/uporabnik/{}/poisci_dogodke/".format(uporabnik))
+            return bottle.redirect(ROOT + "uporabnik/{}/poisci_dogodke/".format(uporabnik))
         else:
-            return bottle.redirect("/uporabnik/{}/moji_dogodki/".format(uporabnik))
+            return bottle.redirect(ROOT + "uporabnik/{}/moji_dogodki/".format(uporabnik))
 
     if st_prostih_mest <= 0:
         set_sporocilo("alert-danger", "Vsa mesta so že zasedena!")
         if stran == 'glavna':
-            return bottle.redirect("/")
+            return bottle.redirect(ROOT)
         elif stran == 'poisci':
-            return bottle.redirect("/uporabnik/{}/poisci_dogodke/".format(uporabnik))
+            return bottle.redirect(ROOT + "uporabnik/{}/poisci_dogodke/".format(uporabnik))
         else:
-            return bottle.redirect("/uporabnik/{}/moji_dogodki/".format(uporabnik))
+            return bottle.redirect(ROOT + "uporabnik/{}/moji_dogodki/".format(uporabnik))
     cur.execute("""
         INSERT INTO udelezba (udelezenec, id_dogodek) VALUES (%s, %s)
             """, [uporabnik, dogodek])
@@ -780,11 +782,11 @@ def pridruzi_se(uporabnik, dogodek, stran):
     conn.commit()
 
     if stran == 'glavna':
-        return bottle.redirect("/")
+        return bottle.redirect(ROOT)
     elif stran == 'poisci':
-            return bottle.redirect("/")
+            return bottle.redirect(ROOT)
     else:
-        return bottle.redirect("/uporabnik/{}/moji_dogodki/".format(uporabnik))
+        return bottle.redirect(ROOT + "uporabnik/{}/moji_dogodki/".format(uporabnik))
 
 
 @bottle.get("/uporabnik/<uporabnik>/<dogodek>/odstrani_dogodek/<stran>/")
@@ -804,11 +806,11 @@ def odstrani_dogodek(uporabnik, dogodek,stran):
     set_sporocilo("alert-success", "Uspešno ste odstranili dogodek!")
     conn.commit()
     if stran == 'glavna':
-        return bottle.redirect("/")
+        return bottle.redirect(ROOT)
     elif stran == 'poisci':
-        return bottle.redirect("/")
+        return bottle.redirect(ROOT)
     else:
-        return bottle.redirect("/uporabnik/{}/moji_dogodki/".format(uporabnik))
+        return bottle.redirect(ROOT + "uporabnik/{}/moji_dogodki/".format(uporabnik))
 
 @bottle.get("/uporabnik/<uporabnik>/<dogodek>/zapusti_dogodek/<stran>/")
 def zapusti_dogodek(uporabnik, dogodek, stran):
@@ -821,16 +823,16 @@ def zapusti_dogodek(uporabnik, dogodek, stran):
     conn.commit()
 
     if stran == 'glavna':
-        return bottle.redirect("/")
+        return bottle.redirect(ROOT)
     elif stran == 'poisci':
-        return bottle.redirect("/")
+        return bottle.redirect(ROOT)
     else:
-        return bottle.redirect("/uporabnik/{}/moji_dogodki/".format(uporabnik))
+        return bottle.redirect(ROOT + "uporabnik/{}/moji_dogodki/".format(uporabnik))
 
 @bottle.get("/prijava/")
 def login_get():
     """Serviraj formo za prijavo."""
-    return bottle.template("prijava.html",
+    return rtemplate("prijava.html",
                            napaka=None,
                            uporabnik=None)
 
@@ -851,24 +853,24 @@ def login_post():
 
     if cur.fetchone() is None:
         # Uporabnisko ime in geslo se ne ujemata
-        return bottle.template("prijava.html",
+        return rtemplate("prijava.html",
                                napaka="Nepravilna prijava",
                                uporabnik=uporabnik)
     else:
         # Vse je v redu, nastavimo cookie in preusmerimo na glavno stran
         bottle.response.set_cookie('uporabnik', uporabnik, path='/', secret=secret)
-        bottle.redirect("/")
+        bottle.redirect(ROOT)
 
 @bottle.get("/odjava/")
 def logout():
     """Pobriši cookie in preusmeri na login."""
     bottle.response.delete_cookie('uporabnik', path='/')
-    bottle.redirect('/prijava/')
+    bottle.redirect(ROOT + 'prijava/')
 
 @bottle.get("/registracija/")
 def login_get():
     """Prikaži formo za registracijo."""
-    return bottle.template("registracija.html", 
+    return rtemplate("registracija.html", 
                            uporabnik=None,
                            ime=None,
                            priimek=None,
@@ -886,14 +888,14 @@ def register_post():
     cur.execute("SELECT 1 FROM uporabnik WHERE uporabnisko_ime=%s", [uporabnik])
     if cur.fetchone():
         # Uporabnik že obstaja
-        return bottle.template("registracija.html",
+        return rtemplate("registracija.html",
                                uporabnik=uporabnik,
                                ime=ime,
                                priimek=priimek,
                                napaka='To uporabniško ime je že zavzeto')
     elif not geslo1 == geslo2:
         # Geslo se ne ujemata
-        return bottle.template("registracija.html",
+        return rtemplate("registracija.html",
                                uporabnik=uporabnik,
                                ime=ime,
                                priimek=priimek,
@@ -906,7 +908,7 @@ def register_post():
         # Daj uporabniku cookie
         conn.commit()
         bottle.response.set_cookie('uporabnik', uporabnik, path='/', secret=secret)
-        bottle.redirect("/")
+        bottle.redirect(ROOT)
 
 @bottle.get("/uporabnik/<uporabnik>/")
 def uporabnik_profil(uporabnik):
@@ -929,7 +931,7 @@ def uporabnik_profil(uporabnik):
     # Pogledamo, če imamo kakšna sporočila za uporabnika
     sporocilo = get_sporocilo()
     # Prikažemo predlog
-    return bottle.template("profil.html",
+    return rtemplate("profil.html",
                            profil_ime=ime,
                            profil_priimek=priimek,
                            ime=ime_prijavljen,
@@ -948,7 +950,7 @@ def uredi_profil(uporabnik, sporocila=[]):
     if uporabnisko_ime != uporabnik:
         # Ne dovolimo dostopa urejanju podatkov drugim uporabnikom
         set_sporocilo("alert-danger", "Nedovoljen dostop do urejanja drugih profilov!")
-        return bottle.redirect("/")
+        return bottle.redirect(ROOT)
     # Ime uporabnika (hkrati preverimo, ali uporabnik sploh obstaja)
     cur.execute("""
     SELECT ime, priimek, spol, datum_rojstva, ulica, hisna_stevilka, kraj, drzava, postna_stevilka 
@@ -959,7 +961,7 @@ def uredi_profil(uporabnik, sporocila=[]):
     """, [uporabnik])
     (ime, priimek, spol, datum_rojstva, ulica, hisna_stevilka, kraj, drzava, postna_stevilka) = cur.fetchone()
     # Prikažemo predlogo
-    return bottle.template("uredi-profil.html",
+    return rtemplate("uredi-profil.html",
                            uporabnik=uporabnik,
                            ime=ime_prijavljen,
                            priimek=priimek_prijavljen,
@@ -1089,7 +1091,7 @@ def sprememba(uporabnik):
                 
     # Prikažemo stran z uporabnikom, z danimi sporočili. Kot vidimo,
     # lahko kar pokličemo funkcijo, ki servira tako stran
-    return bottle.template("uredi-profil.html",
+    return rtemplate("uredi-profil.html",
                            uporabnik=uporabnik,
                            ime=ime,
                            priimek=priimek,
@@ -1123,7 +1125,7 @@ def pokazi_sledilce(uporabnik):
     # Koliko sledilcev ima ta uporabnik?
     st_s = len(sledilci)
     (ime,priimek) = dobi_ime(uporabnik)
-    return bottle.template("sledilci.html",
+    return rtemplate("sledilci.html",
                            uporabnik=uporabnik,
                            ime=ime_prijavljen,
                            priimek=priimek_prijavljen,
@@ -1149,7 +1151,7 @@ def pokazi_zasledovane(uporabnik):
     cur.execute("SELECT COUNT(*) FROM sledilec WHERE sledilec=%s", [uporabnik])
     (st_z,) = cur.fetchone()
     (ime,priimek) = dobi_ime(uporabnik)
-    return bottle.template("zasledovani.html",
+    return rtemplate("zasledovani.html",
                            uporabnik=uporabnik,
                            ime=ime_prijavljen,
                            priimek=priimek_prijavljen,
@@ -1169,7 +1171,7 @@ def upravljaj_profil(uporabnik):
 @bottle.get("/<uporabnik_profil>/<uporabnisko_ime_zasledovani>/<polozaj>/<sprememba>")
 def sporocila(uporabnik_profil, uporabnisko_ime_zasledovani, polozaj, sprememba):
     upravljaj_sledilca(uporabnisko_ime_zasledovani,sprememba=="pricni")
-    return bottle.redirect("/uporabnik/{}/{}/".format(uporabnik_profil,polozaj))
+    return bottle.redirect(ROOT + "uporabnik/{}/{}/".format(uporabnik_profil,polozaj))
 
 @bottle.get("/isci/")
 def isci_uporabnike():
@@ -1182,7 +1184,7 @@ def isci_uporabnike():
     for (up, i, p) in vsi_uporabniki:
         if iskanje.lower() in i.lower() + ' ' + p.lower() or iskanje.lower() in up.lower():
             zadetki.append((up,i,p))
-    return bottle.template("isci.html",
+    return rtemplate("isci.html",
                            iskanje=iskanje,
                            ime=ime_prijavljen,
                            priimek=priimek_prijavljen,
@@ -1193,7 +1195,7 @@ def isci_uporabnike():
 @bottle.get("/isci/<iskanje>/<uporabnik>/<sprememba>/")
 def dodaj_pri_iskanju(iskanje,uporabnik,sprememba):
     upravljaj_sledilca(uporabnik,sprememba=="pricni")
-    return bottle.redirect("/isci/?isci={}".format(iskanje))
+    return bottle.redirect(ROOT + "isci/?isci={}".format(iskanje))
 
 @bottle.get("/uporabnik/<uporabnik>/sporocila/")
 def sporocila_uporabnik(uporabnik):
@@ -1202,7 +1204,7 @@ def sporocila_uporabnik(uporabnik):
     if uporabnik_prijavljen != uporabnik:
         # Ne dovolimo dostopa urejanju podatkov drugim uporabnikom
         set_sporocilo("alert-danger", "Nedovoljen dostop do sporočil drugih profilov!")
-        return bottle.redirect("/")
+        return bottle.redirect(ROOT)
     cur.execute("""
     SELECT prejemnik, posiljatelj, vsebina, cas
     FROM sporocila WHERE posiljatelj=%s OR prejemnik=%s ORDER BY cas DESC""", [uporabnik_prijavljen,uporabnik_prijavljen])
@@ -1210,7 +1212,7 @@ def sporocila_uporabnik(uporabnik):
         (prejemnik, posiljatelj, vsebina, cas) = cur.fetchone()
     except:
         (prejemnik, posiljatelj, vsebina, cas) = (None, None, None, None)
-    return bottle.redirect("/uporabnik/{}/sporocila/{}/".format(uporabnik_prijavljen,(posiljatelj if prejemnik == uporabnik_prijavljen else prejemnik)))
+    return bottle.redirect(ROOT + "uporabnik/{}/sporocila/{}/".format(uporabnik_prijavljen,(posiljatelj if prejemnik == uporabnik_prijavljen else prejemnik)))
 
 @bottle.get("/uporabnik/<uporabnik>/sporocila/<sogovornik>/")
 def sporocila_uporabnika(uporabnik, sogovornik):
@@ -1222,7 +1224,7 @@ def sporocila_uporabnika(uporabnik, sogovornik):
     if uporabnik_prijavljen != uporabnik:
         # Ne dovolimo dostopa urejanju podatkov drugim uporabnikom
         set_sporocilo("alert-danger", "Nedovoljen dostop do sporočil drugih profilov!")
-        return bottle.redirect("/")
+        return bottle.redirect(ROOT)
     # Dobim vsa sporocila
     cur.execute("""
     SELECT prejemnik, posiljatelj, vsebina, cas
@@ -1242,7 +1244,7 @@ def sporocila_uporabnika(uporabnik, sogovornik):
             b = pogovori.get(prejemnik, [])
             b.append((0,vsebina,pretty_date(cas)))
             pogovori[prejemnik] = b
-    return bottle.template("sporocila.html",
+    return rtemplate("sporocila.html",
                            profil_ime=ime_prijavljen,
                            profil_priimek=priimek_prijavljen,
                            ime=ime_prijavljen,
@@ -1261,7 +1263,7 @@ def poslji_sporocilo(uporabnik, sogovornik):
     if vsebina:
         cur.execute("INSERT INTO sporocila(posiljatelj, prejemnik, vsebina) VALUES (%s,%s,%s)",[uporabnik, sogovornik, vsebina])
         conn.commit()
-    return bottle.redirect("/uporabnik/{}/sporocila/{}/#text-polje".format(uporabnik, sogovornik))
+    return bottle.redirect(ROOT + "uporabnik/{}/sporocila/{}/#text-polje".format(uporabnik, sogovornik))
 
 @bottle.post("/uporabnik/<uporabnik>/sporocila/<uporabnik_aktiven>/isci/")
 def poslji_sporocilo(uporabnik,uporabnik_aktiven):
@@ -1272,22 +1274,22 @@ def poslji_sporocilo(uporabnik,uporabnik_aktiven):
         zacasen = None
         for (ui, i, p) in vsi:
             if ui.lower() == isci.lower():
-                return bottle.redirect("/uporabnik/{}/sporocila/{}/#text-polje".format(uporabnik,ui))
+                return bottle.redirect(ROOT + "uporabnik/{}/sporocila/{}/#text-polje".format(uporabnik,ui))
             elif isci.lower() == i.lower() + ' ' + p.lower() and zacasen:
                 # uporabnikov s tem imenom in priimkom je več
                 set_sporocilo("alert-danger", "Zaznanih je bilo več uporabnikov s tem imenom in priimkom. Prosimo da vnesete uporabniško ime.")
-                return bottle.redirect("/uporabnik/{}/sporocila/{}/".format(uporabnik, uporabnik_aktiven))
+                return bottle.redirect(ROOT + "uporabnik/{}/sporocila/{}/".format(uporabnik, uporabnik_aktiven))
             elif isci.lower() == i.lower() + ' ' + p.lower():
                 zacasen = ui
         if zacasen:
-            return bottle.redirect("/uporabnik/{}/sporocila/{}/#text-polje".format(uporabnik, zacasen))
+            return bottle.redirect(ROOT + "uporabnik/{}/sporocila/{}/#text-polje".format(uporabnik, zacasen))
         else:
             set_sporocilo("alert-danger", """
             V bazi ni nobenega uporabnika, katerega uporabniski ime oziroma polno ime in priimek bi se ujemalo z \"{}\".
             """.format(isci))
-            return bottle.redirect("/uporabnik/{}/sporocila/{}/".format(uporabnik, uporabnik_aktiven))
+            return bottle.redirect(ROOT + "uporabnik/{}/sporocila/{}/".format(uporabnik, uporabnik_aktiven))
     set_sporocilo("alert-danger", "V iskalno polje vnesite uporabnisko ime ali poln ime in priimek")
-    return bottle.redirect("/uporabnik/{}/sporocila/{}/".format(uporabnik, uporabnik_aktiven))
+    return bottle.redirect(ROOT + "uporabnik/{}/sporocila/{}/".format(uporabnik, uporabnik_aktiven))
 
 @bottle.post("/uporabnik/<uporabnik>/objavi")
 def nova_objava(uporabnik):
@@ -1298,7 +1300,7 @@ def nova_objava(uporabnik):
         set_sporocilo("alert-success", "Uspešno ste delili objavo!")
     else:
         set_sporocilo("alert-danger", "Hoteli ste objaviti prazno sporočilo. Zakaj?! ಠ_ಠ")
-    return bottle.redirect("/uporabnik/{}/".format(uporabnik))
+    return bottle.redirect(ROOT + "uporabnik/{}/".format(uporabnik))
 
 @bottle.post("/uporabnik/<uporabnik>/komentiraj/<oid>/")
 def komentiraj_na_zidu(uporabnik,oid):
@@ -1308,7 +1310,7 @@ def komentiraj_na_zidu(uporabnik,oid):
     if komentar:
         cur.execute("INSERT INTO komentar(avtor,id_objava,vsebina) VALUES (%s, %s, %s)", [uporabnik_prijavljen, oid, komentar])
         conn.commit()
-    return bottle.redirect("/uporabnik/{}/#objava-{}".format(uporabnik, oid))
+    return bottle.redirect(ROOT + "uporabnik/{}/#objava-{}".format(uporabnik, oid))
 
 @bottle.post("/komentiraj/<oid>/")
 def komentiraj(oid):
@@ -1318,7 +1320,7 @@ def komentiraj(oid):
     if komentar:
         cur.execute("INSERT INTO komentar(avtor,id_objava,vsebina) VALUES (%s, %s, %s)", [uporabnik_prijavljen, oid, komentar])
         conn.commit()
-    return bottle.redirect("/#trac-{}".format(oid))
+    return bottle.redirect(ROOT + "#trac-{}".format(oid))
     
 @bottle.get("/uporabnik/<uporabnik>/komentar/<oid>/<kid>/brisi/")
 def brisi_komentar_na_zidu(uporabnik, oid, kid):
@@ -1326,7 +1328,7 @@ def brisi_komentar_na_zidu(uporabnik, oid, kid):
     cur.execute("DELETE FROM komentar WHERE id=%s",[kid])
     set_sporocilo("alert-success", "Uspešno ste zbrisali komentar!")
     conn.commit()
-    return bottle.redirect("/uporabnik/{}/#objava-{}".format(uporabnik, oid))
+    return bottle.redirect(ROOT + "uporabnik/{}/#objava-{}".format(uporabnik, oid))
 
 @bottle.get("/uporabnik/<uporabnik>/objava/<oid>/brisi/")
 def brisi_komentar_na_zidu(uporabnik, oid):
@@ -1336,14 +1338,17 @@ def brisi_komentar_na_zidu(uporabnik, oid):
     cur.execute("DELETE FROM objava WHERE id=%s",[oid])
     set_sporocilo("alert-success", "Uspešno ste zbrisali objavo!")
     conn.commit()
-    return bottle.redirect("/uporabnik/{}/".format(uporabnik, oid))
-
+    return bottle.redirect(ROOT + "uporabnik/{}/".format(uporabnik, oid))
 
 @bottle.get("/uporabnik/<uporabnik>/moji_dogodki/")
 def moji_dogodki(uporabnik):
     sporocilo = get_sporocilo()
     (uporabnik_prijavljen, ime_prijavljen, priimek_prijavljen) = get_user()
     (ime,priimek)=dobi_ime(uporabnik)
+    if uporabnik_prijavljen != uporabnik:
+        # Ne dovolimo dostopa urejanju podatkov drugim uporabnikom
+        set_sporocilo("alert-danger", "Ne moreš gledati profila drugega uporabnika!")
+        return bottle.redirect(ROOT)
 
     if uporabnik_prijavljen != uporabnik:
         dogodki_jih_organizira = dogodki_organizira(uporabnik = str(uporabnik))
@@ -1352,7 +1357,7 @@ def moji_dogodki(uporabnik):
         dogodki_jih_organizira = dogodki_organizira(uporabnik = str(uporabnik_prijavljen))
         dogodki_se_udelezi = dogodki_udelezi(uporabnik = str(uporabnik_prijavljen))
     
-    return bottle.template("moji_dogodki.html",
+    return rtemplate("moji_dogodki.html",
                             dogodki_jih_organizira=dogodki_jih_organizira,
                             dogodki_se_udelezi=dogodki_se_udelezi,
                             ime=ime_prijavljen,
@@ -1384,7 +1389,7 @@ def pokazi_aktivnost(uporabnik):
         cur.execute("""SELECT ime FROM aktivnost ORDER BY ime""")
         for a in cur:
             vse_aktivnosti.append(a[0])
-    return bottle.template("aktivnosti.html",
+    return rtemplate("aktivnosti.html",
                            uporabnik_prijavljen=uporabnik_prijavljen,
                            ime=ime_prijavljen,
                            aktivnosti=aktivnosti_uporabnika,
@@ -1408,7 +1413,7 @@ def odstrani_aktivnost(uporabnik, aktivnost):
     """, [uporabnik_prijavljen, aktivnost])
     set_sporocilo("alert-success", "Uspešno ste zbrisali aktivnost!")
     conn.commit()
-    return bottle.redirect('/uporabnik/{}/aktivnosti/#{}'.format(uporabnik,aktivnost))
+    return bottle.redirect(ROOT + 'uporabnik/{}/aktivnosti/#{}'.format(uporabnik,aktivnost))
 
 @bottle.get('/<uporabnik>/<aktivnost>/dodaj/')
 def odstrani_aktivnost(uporabnik, aktivnost):
@@ -1420,7 +1425,7 @@ def odstrani_aktivnost(uporabnik, aktivnost):
     """, [uporabnik_prijavljen, aktivnost])
     set_sporocilo("alert-success", "Uspešno ste dodali aktivnost!")
     conn.commit()
-    return bottle.redirect('/uporabnik/{}/aktivnosti/#{}'.format(uporabnik,aktivnost))
+    return bottle.redirect(ROOT +  'uporabnik/{}/aktivnosti/#{}'.format(uporabnik,aktivnost))
 
 @bottle.post('/uporabnik/<uporabnik>/aktivnosti/')
 def dodaj_aktivnost(uporabnik):
@@ -1430,7 +1435,7 @@ def dodaj_aktivnost(uporabnik):
     """, [uporabnik, aktivnost])
     set_sporocilo("alert-success", "Uspešno ste dodali aktivnost!")
     conn.commit()
-    return bottle.redirect('/uporabnik/{}/aktivnosti/'.format(uporabnik,aktivnost))
+    return bottle.redirect(ROOT + 'uporabnik/{}/aktivnosti/'.format(uporabnik,aktivnost))
 ######################################################################
 # Glavni program
 

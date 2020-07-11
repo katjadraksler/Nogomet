@@ -5,19 +5,19 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="IE=edge">
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
-    <link rel="shortcut icon" href="/static/favicon.ico">
+    <link rel="shortcut icon" href="{{ROOT}}static/favicon.ico">
 
     <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="/static/css/bootstrap.min.css">
+    <link rel="stylesheet" href="{{ROOT}}static/css/bootstrap.min.css">
 
     <!-- Custom styles for this template -->
-    <link href="/static/prijava.css" rel="stylesheet">
+    <link href="{{ROOT}}static/prijava.css" rel="stylesheet">
 
     <title>AktiNet prijava</title>
   </head>
   <body class="text-center">
     <form class="form-signin" role="form" method="post">
-      <img class="mb-2" src="/static/favicon.png" alt="" width="100" height="100">
+      <img class="mb-2" src="{{ROOT}}static/favicon.png" alt="" width="100" height="100">
       <h2 class="form-signin-heading">AktiNet</h2>
       %if napaka:
       <div class="alert alert-warning">{{napaka}}</div>
@@ -32,7 +32,7 @@
       </div>
       <button class="btn btn-lg btn-primary btn-block" type="submit">Prijava</button>
       <div>
-        <a href="/registracija/">Registracija</a>
+        <a href="{{ROOT}}registracija/">Registracija</a>
       </div>
       <p class="mt-5 mb-3 text-muted">&copy; 2020</p>
     </form>

@@ -6,7 +6,7 @@
     <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
     <meta name="description" content="">
     <meta name="author" content="">
-    <link rel="icon" href="/static/favicon.ico">
+    <link rel="icon" href="{{ROOT}}static/favicon.ico">
     
     %if defined('title'):
     <title>{{title}}</title>
@@ -17,17 +17,17 @@
 
 
     <!-- Bootstrap CSS -->
-    <link rel="stylesheet" href="/static/css/bootstrap.min.css">
+    <link rel="stylesheet" href="{{ROOT}}static/css/bootstrap.min.css">
 
     <!-- Custom styles for this template -->
-    <link href="/static/aktinet.css" rel="stylesheet">
+    <link href="{{ROOT}}static/aktinet.css" rel="stylesheet">
 
   </head>
   <body class="bg-light">
 
     <nav class="navbar navbar-expand-md fixed-top navbar-dark bg-dark">
-      <a class="navbar-brand" href="/">
-        <img src="/static/favicon.ico" width="30" height="30" class="d-inline-block align-top" alt="">
+      <a class="navbar-brand" href="{{ROOT}}">
+        <img src="{{ROOT}}static/favicon.ico" width="30" height="30" class="d-inline-block align-top" alt="">
         AktiNet
       </a>
       <button class="navbar-toggler p-0 border-0" type="button" data-toggle="offcanvas">
@@ -42,22 +42,22 @@
             %else:
             %celo_ime = 'Profil'
             %end
-            <a class="nav-link" href="/uporabnik/{{uporabnik_prijavljen}}/">{{celo_ime}}</a>
+            <a class="nav-link" href="{{ROOT}}uporabnik/{{uporabnik_prijavljen}}/">{{celo_ime}}</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="/uporabnik/{{uporabnik_prijavljen}}/sporocila/">Sporočila</a>
+            <a class="nav-link" href="{{ROOT}}uporabnik/{{uporabnik_prijavljen}}/sporocila/">Sporočila</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="/uporabnik/{{uporabnik_prijavljen}}/dodaj_dogodek/">Dodaj dogodek</a>
+            <a class="nav-link" href="{{ROOT}}uporabnik/{{uporabnik_prijavljen}}/dodaj_dogodek/">Dodaj dogodek</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="/uporabnik/{{uporabnik_prijavljen}}/poisci_dogodke/">Poišči dogodke</a>
+            <a class="nav-link" href="{{ROOT}}uporabnik/{{uporabnik_prijavljen}}/poisci_dogodke/">Poišči dogodke</a>
           </li>
           <li class="nav-item">
-            <a class="nav-link" href="/odjava/">Odjava</a>
+            <a class="nav-link" href="{{ROOT}}odjava/">Odjava</a>
           </li>
         </ul>
-        <form class="form-inline my-2 my-lg-0" action="/isci/" method="get">
+        <form class="form-inline my-2 my-lg-0" action="{{ROOT}}isci/" method="get">
           <input class="form-control mr-sm-2" name="isci" type="text" placeholder="Iskanje v AktiNetu">
           <button class="btn btn-outline-success my-2 my-sm-0" type="submit">Išči</button>
         </form>
@@ -74,9 +74,9 @@
     <!-- Bootstrap core JavaScript
     ================================================== -->
     <!-- Placed at the end of the document so the pages load faster -->
-    <script src="/static/offcanvas.js"></script>
-    <script src="/static/aktinet.js"></script>
+    <script src="{{ROOT}}static/offcanvas.js"></script>
+    <script src="{{ROOT}}static/aktinet.js"></script>
     <script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
-    <script src="/static/js/bootstrap.min.js"></script>
+    <script src="{{ROOT}}static/js/bootstrap.min.js"></script>
   </body>
 </html>

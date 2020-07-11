@@ -43,9 +43,9 @@
             <strong class="text-gray-dark">{{aktivnost.capitalize()}}</strong>
             <div>
                 %if aktivnost in aktivnosti_prijavljenega:
-                <a class="btn btn-outline-danger mr-3" href="/{{uporabnik}}/{{aktivnost}}/odstrani/">Odstrani</a>
+                <a class="btn btn-outline-danger mr-3" href="{{ROOT}}{{uporabnik}}/{{aktivnost}}/odstrani/">Odstrani</a>
                 %else:
-                <a class="btn btn-outline-success mr-3" href="/{{uporabnik}}/{{aktivnost}}/dodaj/">Dodaj</a>
+                <a class="btn btn-outline-success mr-3" href="{{ROOT}}{{uporabnik}}/{{aktivnost}}/dodaj/">Dodaj</a>
                 %end
             </div>
         </div>

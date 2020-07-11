@@ -5,17 +5,17 @@
 %for (uporabnisko_ime_zadetek, ime_zadetek, priimek_zadetek) in zadetki:
 <div id="{{uporabnisko_ime_zadetek}}"> 
     <div class="d-flex align-items-center p-3 my-3  rounded shadow">
-      <img class="mr-3" src="/static/ikona.svg" alt="" width="40" height="40">
+      <img class="mr-3" src="{{ROOT}}static/ikona.svg" alt="" width="40" height="40">
       <div class="pl-2 media-body">
       <strong class="text-gray-dark">{{ime_zadetek}} {{priimek_zadetek}}</strong>
-      <div><a class="trac-uporabnik" href="/uporabnik/{{uporabnisko_ime_zadetek}}/">@{{uporabnisko_ime_zadetek}}</a></div>
+      <div><a class="trac-uporabnik" href="{{ROOT}}uporabnik/{{uporabnisko_ime_zadetek}}/">@{{uporabnisko_ime_zadetek}}</a></div>
       </div>
       %if uporabnisko_ime_zadetek in zasledovani_prijavljenega:
-      <a class="btn btn-outline-secondary mr-3" href="/isci/{{iskanje}}/{{uporabnisko_ime_zadetek}}/prenehaj/">Prenehaj slediti</a>
+      <a class="btn btn-outline-secondary mr-3" href="{{ROOT}}isci/{{iskanje}}/{{uporabnisko_ime_zadetek}}/prenehaj/">Prenehaj slediti</a>
       %elif uporabnisko_ime_zadetek != uporabnik_prijavljen:
-      <a class="btn btn-outline-primary mr-3" href="/isci/{{iskanje}}/{{uporabnisko_ime_zadetek}}/pricni/">Sledi</a>
+      <a class="btn btn-outline-primary mr-3" href="{{ROOT}}isci/{{iskanje}}/{{uporabnisko_ime_zadetek}}/pricni/">Sledi</a>
       %end
-      <a class="btn btn-outline-success" href="/uporabnik/{{uporabnik_prijavljen}}/sporocila/{{uporabnisko_ime_zadetek}}/#text-polje">Pošlji sporočilo</a>
+      <a class="btn btn-outline-success" href="{{ROOT}}uporabnik/{{uporabnik_prijavljen}}/sporocila/{{uporabnisko_ime_zadetek}}/#text-polje">Pošlji sporočilo</a>
     </div>
 </div>
 %end
