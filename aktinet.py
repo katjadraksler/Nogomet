@@ -1344,10 +1344,6 @@ def moji_dogodki(uporabnik):
     sporocilo = get_sporocilo()
     (uporabnik_prijavljen, ime_prijavljen, priimek_prijavljen) = get_user()
     (ime,priimek)=dobi_ime(uporabnik)
-    #if uporabnik_prijavljen != uporabnik:
-        # Ne dovolimo dostopa urejanju podatkov drugim uporabnikom
-    #    set_sporocilo("alert-danger", "Ne moreš gledati profila drugega uporabnika!")
-    #    return bottle.redirect(ROOT)
 
     if uporabnik_prijavljen != uporabnik:
         dogodki_jih_organizira = dogodki_organizira(uporabnik = str(uporabnik))
