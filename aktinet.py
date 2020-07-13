@@ -433,9 +433,7 @@ def dobi_dogodke_parametri (aktivnost, tip, datum_od, datum_do, ulica, kraj, org
                     AND (uporabnik.uporabnisko_ime = %s OR %s)
                     AND (uporabnik.ime = %s OR %s)
                     AND (uporabnik.priimek = %s OR %s)
-                    ORDER BY datum)
-
-                    
+                    ORDER BY datum)              
                 """, 
                     [aktivnost, aktivnost_BOOL, tip, tip_BOOL, datum_od, datum_od_BOOL, datum_do, 
                     datum_do_BOOL, ulica, ulica_BOOL, kraj, kraj_BOOL, organizator, organizator_BOOL, 
@@ -549,7 +547,7 @@ def nov_dogodek(uporabnik):
                            priimek=priimek,
                            aktivnosti = cur,
                            uporabnik = uporabnik_prijavljen,
-                           uporabnik_prijavljen=uporabnik_prijavljen,
+                           uporabnik_prijavljen = uporabnik_prijavljen,
                            sporocilo = sporocilo)
 
 @bottle.post("/uporabnik/<uporabnik>/dodaj_dogodek/")
@@ -739,6 +737,7 @@ def vrni_dogodke(uporabnik):
 @bottle.get("/uporabnik/<uporabnik>/<dogodek>/pridruzi_se/<stran>/")
 def pridruzi_se(uporabnik, dogodek, stran):
 
+    (uporabnik_prijavljen, ime, priimek) = get_user()
     """Preverimo koliko je že udeležencev v dogodku"""
     cur.execute(""" SELECT COUNT(udelezenec) FROM udelezba WHERE id_dogodek = %s""",[dogodek])
     (trenutno_st_udelezencev,) = cur.fetchone()
@@ -755,7 +754,7 @@ def pridruzi_se(uporabnik, dogodek, stran):
 
     """Ali je uporabnik že udeležen v tem dogodku"""
     cur.execute(""" SELECT (udelezenec, id_dogodek) FROM udelezba
-    WHERE id_dogodek = %s AND udelezenec = %s """, [dogodek, uporabnik])
+    WHERE id_dogodek = %s AND udelezenec = %s """, [dogodek, uporabnik_prijavljen])
     c=cur.fetchall()
     
     if c != []:
@@ -763,7 +762,7 @@ def pridruzi_se(uporabnik, dogodek, stran):
         if stran == 'glavna':
             return bottle.redirect(ROOT)
         elif stran == 'poisci':
-            return bottle.redirect(ROOT + "uporabnik/{}/poisci_dogodke/".format(uporabnik))
+            return bottle.redirect(ROOT)
         else:
             return bottle.redirect(ROOT + "uporabnik/{}/moji_dogodki/".format(uporabnik))
 
@@ -772,12 +771,12 @@ def pridruzi_se(uporabnik, dogodek, stran):
         if stran == 'glavna':
             return bottle.redirect(ROOT)
         elif stran == 'poisci':
-            return bottle.redirect(ROOT + "uporabnik/{}/poisci_dogodke/".format(uporabnik))
+            return bottle.redirect(ROOT)
         else:
             return bottle.redirect(ROOT + "uporabnik/{}/moji_dogodki/".format(uporabnik))
     cur.execute("""
         INSERT INTO udelezba (udelezenec, id_dogodek) VALUES (%s, %s)
-            """, [uporabnik, dogodek])
+            """, [uporabnik_prijavljen, dogodek])
     set_sporocilo("alert-success", "Uspešno ste se pridružili dogodku!")
     conn.commit()
 
@@ -794,8 +793,8 @@ def odstrani_dogodek(uporabnik, dogodek,stran):
 
     (uporabnik_prijavljen, ime, priimek) = get_user()
 
-    if uporabnik != uporabnik_prijavljen:
-        set_sporocilo("alert-danger", "Ne morete brisati dogodkov, ki jih ne organizirate!")
+    #if uporabnik != uporabnik_prijavljen:
+    #    set_sporocilo("alert-danger", "Ne morete brisati dogodkov, ki jih ne organizirate!")
 
     """Najprej moramo zbrisati vse udelezence, saj se navezujejo na dogodek"""
     cur.execute("""DELETE FROM udelezba WHERE udelezba.id_dogodek = %s""",[dogodek])
@@ -818,7 +817,7 @@ def zapusti_dogodek(uporabnik, dogodek, stran):
     (uporabnik_prijavljen, ime, priimek) = get_user()
 
     """Zapustimo dogodek"""
-    cur.execute("""DELETE FROM udelezba WHERE udelezba.udelezenec = %s AND udelezba.id_dogodek = %s""",[uporabnik,dogodek])
+    cur.execute("""DELETE FROM udelezba WHERE udelezba.udelezenec = %s AND udelezba.id_dogodek = %s""",[uporabnik_prijavljen,dogodek])
     set_sporocilo("alert-success", "Uspešno ste zapustili dogodek!")
     conn.commit()
 
@@ -1345,10 +1344,10 @@ def moji_dogodki(uporabnik):
     sporocilo = get_sporocilo()
     (uporabnik_prijavljen, ime_prijavljen, priimek_prijavljen) = get_user()
     (ime,priimek)=dobi_ime(uporabnik)
-    if uporabnik_prijavljen != uporabnik:
+    #if uporabnik_prijavljen != uporabnik:
         # Ne dovolimo dostopa urejanju podatkov drugim uporabnikom
-        set_sporocilo("alert-danger", "Ne moreš gledati profila drugega uporabnika!")
-        return bottle.redirect(ROOT)
+    #    set_sporocilo("alert-danger", "Ne moreš gledati profila drugega uporabnika!")
+    #    return bottle.redirect(ROOT)
 
     if uporabnik_prijavljen != uporabnik:
         dogodki_jih_organizira = dogodki_organizira(uporabnik = str(uporabnik))

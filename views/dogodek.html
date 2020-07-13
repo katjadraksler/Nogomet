@@ -48,11 +48,11 @@
           </div>
           %if uporabnik_prijavljen in udelezenci:
           <div class="col-md-1.5 list-hour">
-            <a class="gumb1" href="{{ROOT}}uporabnik/{{uporabnik_prijavljen}}/{{id}}/zapusti_dogodek/{{stran}}/">Zapusti dogodek</a> 
+            <a class="gumb1" href="{{ROOT}}uporabnik/{{uporabnik}}/{{id}}/zapusti_dogodek/{{stran}}/">Zapusti dogodek</a> 
           </div>
           %else:
           <div class="col-md-3 list-hour">
-            <a class="gumb1" href="{{ROOT}}uporabnik/{{uporabnik_prijavljen}}/{{id}}/pridruzi_se/{{stran}}/">Pridruži se</a> 
+            <a class="gumb1" href="{{ROOT}}uporabnik/{{uporabnik}}/{{id}}/pridruzi_se/{{stran}}/">Pridruži se</a> 
           </div>
           %end
 
@@ -108,7 +108,7 @@
           </div> 
           %if organizator == uporabnik_prijavljen:
           <div class="col-md-1.5 list-hour">
-            <a class="gumb1" href="{{ROOT}}uporabnik/{{uporabnik_prijavljen}}/{{id}}/odstrani_dogodek/{{stran}}/">Izbriši dogodek</a> 
+            <a class="gumb1" href="{{ROOT}}uporabnik/{{uporabnik}}/{{id}}/odstrani_dogodek/{{stran}}/">Izbriši dogodek</a> 
           </div>
           %end   
 
